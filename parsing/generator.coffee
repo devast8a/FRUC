@@ -27,7 +27,12 @@ find = (path, parents, parent)->
     path.push parent
     parents.push parent
 
-    ns = shuffle parent.getNodes()
+    nodes = parent.getNodes()
+
+    if nodes == false
+        return false
+
+    ns = shuffle nodes
 
     if ns.length == 0
         return false
@@ -54,6 +59,26 @@ find = (path, parents, parent)->
     parents.pop()
     return true
 
+class TokenStream
+    constructor: ->
+        @tokens = []
+        @text = []
+
+    push: (token)->
+        if typeof(token) == 'string'
+            @text.push token
+        else
+            @pushText()
+            @tokens.push token
+
+    pushText: ->
+        if @text.length > 0
+            @tokens.push @text.join ''
+
+    getTokens: ->
+        @pushText()
+        return @tokens
+
 module.exports =
 class Generator
     constructor: (@grammar)->
@@ -64,8 +89,8 @@ class Generator
         path = []
         find path, [], root
 
-        output = []
+        tokens = new TokenStream
         for n in path
-            n.generate output
+            n.generate tokens
 
-        return output
+        return tokens.getTokens()

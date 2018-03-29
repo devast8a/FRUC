@@ -5,6 +5,7 @@ class Repeat extends Any
     toString: -> "Repeat(#{@rule})"
 
     init: (options, rule)->
+        super()
         @rule = @definitionToMatcher rule
 
         if options.separator

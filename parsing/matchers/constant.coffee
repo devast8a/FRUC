@@ -12,3 +12,6 @@ class Constant extends Matcher
         @symbols = (literal: c for c in @value)
 
     toString: -> "`#{@value}`"
+
+    getNodes: -> false
+    generate: (tokens)-> tokens.push @value
