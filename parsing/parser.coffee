@@ -9,6 +9,7 @@ class Parser
         parser.feed input
 
         if parser.results.length != 1
-            throw new Error
+            console.log parser.results
+            throw new Error "#{parser.results.length}"
 
         return parser.results[0]
