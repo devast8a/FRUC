@@ -6,7 +6,11 @@ class Any extends Matcher
     init: ->
         @definitions = []
 
+
     add: (definition, options)->
+        if typeof(options) == 'function'
+            options = {process: options}
+
         matcher = @createMatcher Definition, options, definition
         @definitions.push matcher
         return matcher

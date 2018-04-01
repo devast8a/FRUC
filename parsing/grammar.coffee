@@ -9,6 +9,7 @@ Regex = require './matchers/regex'
 module.exports =
 class Grammar
     constructor: ->
+        @options = {}
         @rules = new Map
         @matchers = []
 
@@ -18,6 +19,11 @@ class Grammar
 
         # Built-in matchers
         @root = @rule '.root'
+        @between = @rule '.between', between: null
+
+        # Set base options
+        @options.between = @between
+        @options.optionalEmptyValue = []
 
         @ParserStart = @root.name
 
@@ -42,16 +48,17 @@ class Grammar
             matcher.name = matcher.id.toString()
             matcher.parent = options.parent
 
+        matcher.options = options
         @matchers.push matcher
-        matcher.init options, args...
+        matcher.init args...
 
         return matcher
 
-    rule: (name)->
+    rule: (name, options = null)->
         if @rules.has name
             return @rules.get name
 
-        rule = @createMatcher Rule, null, name
+        rule = @createMatcher Rule, options, name
         @rules.set name, rule
         return rule
 

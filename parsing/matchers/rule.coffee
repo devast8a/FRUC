@@ -2,7 +2,7 @@ Any = require './any'
 
 module.exports =
 class Rule extends Any
-    init: (options, @label)->
+    init: (@label)->
         super()
 
     toString: -> "<#{@label}>"

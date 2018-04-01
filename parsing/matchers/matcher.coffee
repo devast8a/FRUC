@@ -4,6 +4,25 @@ class Matcher
 
     init: ->
 
+    getOption: (name)->
+        obj = this
+        while obj?
+            value = obj.options[name]
+            if value != undefined
+                return value
+
+            value = obj.constructor.options?[name]
+            if value != undefined
+                return value
+
+            obj = obj.parent
+
+        return @grammar.options[name]
+
+    setOption: (name, value)->
+        @options[name] = value
+        @invalidateChildren()
+
     createMatcher: (constructor, options, args...)->
         options ?= {}
         options.parent = this
@@ -22,5 +41,9 @@ class Matcher
 
     matchersToSymbols: (matchers)->
         (@matcherToSymbol matcher for matcher in matchers)
+
+    postprocess: -> throw new Error "#{@constructor.name} must implement #{@constructor.name}::postprocess"
+    getNodes: -> throw new Error "#{@constructor.name} must implement #{@constructor.name}::getNodes"
+    generate: -> throw new Error "#{@constructor.name} must implement #{@constructor.name}::generate"
 
 Matcher.Empty = {'special': 'none'}

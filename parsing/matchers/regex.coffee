@@ -10,8 +10,9 @@ module.exports =
 class Regex extends Any
     toString: -> @regex.toString()
 
-    init: (options, @regex)->
-        super options
+    init: (@regex)->
+        super()
+        @options.between = null
         ast = parse @regex.source
         @add @build_seq ast.tree
 

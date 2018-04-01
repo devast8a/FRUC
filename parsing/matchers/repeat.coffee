@@ -1,16 +1,22 @@
 Any = require './any'
 
+repeat = (data)->
+    data[0].data.concat data[1]
+
 module.exports =
 class Repeat extends Any
     toString: -> "Repeat(#{@rule})"
 
-    init: (options, rule)->
+    init: (rule)->
         super()
         @rule = @definitionToMatcher rule
 
-        if options.separator
-            @add @rule
-            @add [this, options.separator, @rule]
+        separator = @getOption 'separator'
+        type = @getOption 'type'
+
+        if separator
+            @tail = @add @rule
+            @repeat = @add [this, separator, @rule], repeat
         else
-            @add @rule
-            @add [this, @rule]
+            @tail = @add @rule
+            @repeat = @add [this, @rule], repeat

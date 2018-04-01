@@ -1,5 +1,8 @@
+{parse} = require 'regulex'
+
 Flags = require './flags'
 Matcher = require './matcher'
+AstNode = require './astnode'
 
 random = (seq)->
     seq[Math.floor Math.random() * seq.length]
@@ -11,7 +14,7 @@ module.exports =
 class Charset extends Matcher
     @flags |= Flags.ADD_DIRECTLY_AS_RULE
 
-    init: (options, regex)->
+    init: (regex)->
         @setRegex regex
 
     setRegex: (@regex)->
@@ -21,7 +24,22 @@ class Charset extends Matcher
 
     getNodes: -> false
     generate: (tokens)->
-        source = @regex.source
-        source = source[1..-2]
-        source = source.replace /\\(.)/g, (a, b)->b
-        tokens.push random source
+        if not @pool?
+            tree = parse @regex.source
+            {chars, ranges, classes} = tree.tree[0]
+
+            if classes.length > 0
+                throw new Error 'Generating input from regex classes is not supported'
+
+            pool = []
+            for range in ranges
+                start = range.charCodeAt 0
+                end = range.charCodeAt 1
+                for i in [start..end]
+                    pool.push String.fromCharCode i
+            @pool = pool.join('') + chars
+
+        tokens.push random @pool
+
+    postprocess: (data, location)->
+        return new AstNode this, data[0], location, location + 1

@@ -6,7 +6,15 @@ class Parser
 
     parse: (input)->
         parser = new nearley.Parser @grammar.ParserRules, @grammar.ParserStart
-        parser.feed input
+        
+        if input instanceof Array
+            for p in input
+                if typeof(p) == 'string'
+                    parser.feed p
+                else
+                    parser.feed [p]
+        else
+            parser.feed input
 
         if parser.results.length != 1
             console.log parser.results

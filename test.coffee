@@ -1,67 +1,91 @@
 Grammar = require 'parsing/grammar'
-{Rep, Opt, OptRep} = require 'parsing/grammar_helpers'
+{Rep, Opt, OptRep, Token, importSpace} = require 'parsing/grammar_helpers'
 
 grammar = new Grammar
 grammar.define ->
-    NS = ''
-    _ = ' '
+    # SPACE, NO_SPACE, or SPACE_NL are /explicit/ (and match repeated whitespace)
+    # eg.
+    #   ['a', 'b'] could match 'ab' or 'a b'
+    #   ['a', SPACE, 'b'] matches 'a b' but NOT 'ab'
+    #   ['a', NO_SPACE, 'b'] matches 'ab' but NOT 'a b'
+    {SPACE, NO_SPACE, SPACE_NL} = importSpace grammar
+    # Sets up optional whitespace between all matched input
+    grammar.between.add Opt(SPACE_NL)
 
-    @atom.add @identifier
+    ############################################################################
+    # Identifiers
     @identifier.add /[a-zA-Z_][a-zA-Z_0-9]*/
 
     ############################################################################
-    # Atoms
-    ############################################################################
-    #@expression.add @atom
-    @atom.add ['(', @expression, ')']
+    # Function declaration
+    @statement.add @function
+    @function.add ['def', SPACE, @identifier, Opt(@function_parameters), '->', @function_body]
 
-    # Bracket index
-    @atom.add @bracket_index
+    @function_parameters.add ['(', OptRep(@function_parameter, separator: ','), ')']
+    @function_parameter.add @identifier
 
-    @bracket_index.add [@atom, NS, '[', @bracket_index_expressions, ']']
-    @bracket_index_expressions.add Rep(@bracket_index_expression, separator: ',')
-    @bracket_index_expression.add @expression
-
-
-    # Dot index
-    @atom.add @dot_index
-
-    @dot_index.add [@atom, '.', @identifier]
+    @function_body.add @body
 
     ############################################################################
-    # Expressions
+    # Variable declaration
+    @statement.add @declare_variable
+    @declare_variable.add [@identifier, ':', @identifier]
+
     ############################################################################
-    # Binary Expression
-    @expression.add @binary_expression
-    @binary_expression.add @prefix_postfix
-    @binary_expression.add [@binary_expression, _, @binary_operator, _, @prefix_postfix]
+    # Function call
+    @statement.add @call
 
-    @binary_operator.add /[~!@#$%^&*\-+_=]+/
+    @call.add [@callable, NO_SPACE, '(', Opt(@call_arguments), ')']
 
-    # Allows only one of prefix or postfix to be used
-    @prefix_postfix.add @prefix_expression
-    @prefix_postfix.add @postfix_expression
-    @prefix_postfix.add @atom
+    # Arguments
+    @call_arguments.add @call_argument, separator: ','
+    @call_argument.add @expression
 
-    # Prefix Expression
-    @prefix_expression.add [@prefix_operator, NS, @atom]
-    @prefix_operator.add /[~!@#$%^&*\-+_=]+/
-
-    # Postfix Expression
-    @postfix_expression.add [@atom, NS, @postfix_operator]
-    @postfix_operator.add /[~!@#$%^&*\-+_=]+/
-
-    grammar.root.add @expression
+    # Callables
+    @callable.add @identifier
 
 
+    @expression.add @identifier
+    @body.add ['{', @statement_list, '}']
+    @statement_list.add Rep(@statement)
+
+    grammar.root.add @statement_list
+
+
+
+
+
+
+
+
+
+
+
+
+Fmt = require 'fmt'
+fmt = new Fmt
 
 Parser = require 'parsing/parser'
 parser = new Parser grammar
-parser.parse '++abc + abc++'
-parser.parse 'abc++ + ++abc'
-parser.parse '++(abc++)'
+
+output = """
+def main -> {
+    print(hello)
+}
+"""
+
+console.time 'parsing'
+parser.parse output
+console.timeEnd 'parsing'
 
 
-Generator = require 'parsing/generator'
-generator = new Generator grammar
-console.log generator.generate()
+#Generator = require 'parsing/generator'
+#generator = new Generator grammar
+#
+#for i in [1..10]
+#    input = generator.generate()
+#    if input.length > 0
+#        console.log input
+#        parser.parse input
+#    else
+#        console.log '<empty>'
