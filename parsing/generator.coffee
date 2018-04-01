@@ -74,6 +74,7 @@ class TokenStream
     pushText: ->
         if @text.length > 0
             @tokens.push @text.join ''
+            @text = []
 
     getTokens: ->
         @pushText()
