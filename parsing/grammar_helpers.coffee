@@ -21,14 +21,17 @@ importSpace = (grammar)->
     SPACE = grammar.rule ':SPACE'
     SPACE.add /[ \t]+/
     SPACE.noBetween = true
+    SPACE.ignoreOutput = true
 
     NO_SPACE = grammar.rule ':NOSPACE'
     NO_SPACE.add ''
     NO_SPACE.noBetween = true
+    NO_SPACE.ignoreOutput = true
 
     SPACE_NL = grammar.rule ':SPACE_NL'
     SPACE_NL.add /[ \t\n\r]+/
     SPACE_NL.noBetween = true
+    SPACE_NL.ignoreOutput = true
 
     return {
         SPACE: SPACE

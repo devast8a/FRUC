@@ -6,7 +6,17 @@ preprocess = (data, location, reject)->
     end = AstNode.getEnd data, location
 
     if @options.process?
-        data = @options.process data, location, reject
+        stripped = []
+        for node in data
+            if node.definition.ignoreOutput
+                continue
+
+            if node.definition.parent.ignoreOutput
+                continue
+
+            stripped.push node
+
+        data = @options.process stripped, location, reject
 
     if data == reject
         return reject
@@ -19,6 +29,10 @@ class Definition extends Matcher
     @flags |= Flags.INHERIT_PARENT_ID
 
     init: (@definition)->
+        pp = @options.preprocess
+        if pp?
+            @postprocess = pp
+
         if @definition == Matcher.Empty
             @matchers = []
             @symbols = []

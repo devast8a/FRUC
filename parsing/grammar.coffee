@@ -19,7 +19,11 @@ class Grammar
 
         # Built-in matchers
         @root = @rule '.root'
-        @between = @rule '.between', between: null
+
+        @between = @rule '.between',
+            between: null
+
+        @between.ignoreOutput = true
 
         # Set base options
         @options.between = @between

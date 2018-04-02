@@ -20,3 +20,5 @@ class Constant extends Matcher
 
     getNodes: -> false
     generate: (tokens)-> tokens.push @value
+
+    ignoreOutput: true
