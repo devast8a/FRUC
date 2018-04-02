@@ -4,7 +4,7 @@
 Any = require './any'
 Charset = require './charset'
 Constant = require './constant'
-{Rep, Opt} = require '../grammar_helpers'
+{Rep, Opt} = require '../grammar/helpers'
 
 module.exports =
 class Regex extends Any

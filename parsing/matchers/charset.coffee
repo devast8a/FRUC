@@ -1,8 +1,9 @@
-{parse} = require 'regulex'
+Flags = require '../grammar/flags'
+AstNode = require '../grammar/astnode'
 
-Flags = require './flags'
 Matcher = require './matcher'
-AstNode = require './astnode'
+
+{parse} = require 'regulex'
 
 random = (seq)->
     seq[Math.floor Math.random() * seq.length]

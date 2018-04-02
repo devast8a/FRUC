@@ -1,9 +1,9 @@
-Flags = require './matchers/flags'
-Rule = require './matchers/rule'
+Flags = require './grammar/flags'
+Builder = require './grammar/builder'
 
+Rule = require './matchers/rule'
 Constant = require './matchers/constant'
 Matcher = require './matchers/matcher'
-Builder = require './matchers/builder'
 Regex = require './matchers/regex'
 
 module.exports =

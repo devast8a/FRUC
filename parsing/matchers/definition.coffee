@@ -1,5 +1,6 @@
-AstNode = require './astnode'
-Flags = require './flags'
+AstNode = require '../grammar/astnode'
+Flags = require '../grammar/flags'
+
 Matcher = require './matcher'
 
 preprocess = (data, location, reject)->

@@ -1,4 +1,4 @@
-{Opt, Rep, Grammar} = require 'parsing/grammar'
+Grammar = require 'parsing/grammar'
 Parser = require 'parsing/parser'
 
 describe 'Matcher', ->

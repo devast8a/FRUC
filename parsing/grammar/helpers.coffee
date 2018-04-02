@@ -1,7 +1,7 @@
-Builder = require './matchers/builder'
-OptionalMatcher = require './matchers/optional'
-RepeatMatcher = require './matchers/repeat'
-TokenMatcher = require './matchers/token'
+Builder = require './builder'
+OptionalMatcher = require '../matchers/optional'
+RepeatMatcher = require '../matchers/repeat'
+TokenMatcher = require '../matchers/token'
 
 exports.Opt =
 Opt = (rule, options)-> new Builder OptionalMatcher, options, rule
