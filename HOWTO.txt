@@ -1,0 +1,173 @@
+# How to FRUC ##################################################################
+
+The basic building block of grammar in FRUC are called matchers. Matchers are
+designed to be simple single purpose components that are combined together to
+form more complex parsing behaviour.
+
+# Constant #####################################################################
+Imagine we have a lanugage called HELLOWORLD, where the input is only allowed to
+be the string "HELLOWORLD". To build a parser for HELLOWORLD, we could write the
+following piece of code.
+
+grammar = new Grammar
+gramamr.define ->
+    grammar.root.add 'HELLOWORLD'
+
+This code creates a new definition for the root rule. The string 'HELLOWORLD' is
+automatically converted to an instance of the Constant matcher that contains the
+value 'HELLOWORLD'. The Constant matcher does only one thing, it matches the
+input if it is EXACTLY the same as the value passed to Constant.
+
+# Regex ########################################################################
+Similarly if we wanted to build a parser for a language called HeLloWoRlD, where
+the input is only allowed to be the string "HELLOWORLD" but we do not care about
+the case, we could write the following piece of code.
+
+grammar = new Grammar
+gramamr.define ->
+    grammar.root.add /[Hh][Ee][Ll][Ll][Oo][Ww][Oo][Rr][Ll][Dd]/
+
+The regular expression is automatically converted to the Regex matcher, similar
+to the Constant matcher, the Regex matcher does only one thing. It matches the
+input if it matches the regular expression.
+
+# Rule #########################################################################
+grammar.root and for that matter any other "rule" are actually instances of yet
+another matcher called Rule. The Rule matcher contains a list of definitions, if
+any of those definitions match the input then the Rule matcher also matches the
+input. For example.
+
+grammar = new Grammar
+gramamr.define ->
+    grammar.root.add "Ant"
+    grammar.root.add "Bear"
+
+This grammar can match the input "Ant" or the input "Bear". As "Ant" and "Bear"
+are different grammar.root can only ever match one or the other, but what if you
+were to write a grammar where either definition could be matched? For example.
+
+grammar = new Grammar
+grammar.define ->
+    grammar.root.add "Ant"
+    grammar.root.add "Ant"
+
+Although it would appear useless, this grammar is what we call ambiguous. Both
+the first and second definition of grammar.root will match the input "Ant". Rule
+in this case actually matches both definitions and returns the parse trees for
+both. This is undesirable and should be avoided at all costs. NOTE: I have a few
+ideas on how to build ambiguous grammar detection for common mistakes. More on
+that at another time.
+
+We aren't stuck with just using the root rule, we can create as many rules as we
+want. Rules are specified with the following syntax @name_of_rule and similar to
+grammar
+
+grammar = new Grammar
+grammar.define ->
+    # Rules do not need to be defined before use
+    @grammar.root.add @ant
+    @grammar.root.add @bear
+
+    @ant.add 'ant'
+    @ant.add 'ants'
+
+    @bear.add 'bear'
+    @bear.add 'bears'
+
+# Definition ###################################################################
+The last thing we can do is string together matchers so that the first matcher
+will match the input followed by the second matcher. This is done just by using
+an array with the add function.
+
+grammar = new Grammar
+grammar.define ->
+    @animal.add 'Ant'
+    @animal.add 'Bear'
+    @animal.add 'Cat'
+
+    # Same as grammar.root.add @animal
+    # Arrays are optional for definitions with single elements
+    grammar.root.add [@animal]
+    grammar.root.add [@animal, " Yikes!"]
+
+This matches "Ant", "Bear", or "Cat".
+It also matches "Ant Yikes!", "Bear Yikes!", "Cat Yikes!"
+
+# Syntax Tree ##################################################################
+The result of running a parser on some input is what is called a Syntax Tree. A
+Syntax Tree describes which rules of a grammar a parser used when parsing parts
+of the input. For example.
+
+grammar = new Grammar
+grammar.root.add 'test'
+
+parser = new Parser grammar
+console.log parser.parse 'test'
+
+Would output the following
+AstNode {
+    definition: (<.root>: `test`),
+    data: [
+        AstNode {
+            definition: `test`,
+            data: 'test'
+            start: 0,
+            end: 4
+        }
+    ],
+    start: 0,
+    end: 4
+}
+
+AstNode represents a node in the Abstract Syntax Tree.
+    definition is a reference to the matcher which matched the input
+    data is the input that was matched (potentially another AstNode)
+    start is where the match begins in the input
+    end is where the match ends in the input
+
+Constant outputs an AstNode where data is the constant value matched
+Regex output is currently broken but intended to be same as Constant
+Rules don't output anything, instead we rely on the output from Definition.
+Definition outputs an AstNode where data is an array containing each of the
+    AstNodes returned by each of the matchers in the definition.
+
+# Ast Processing ###############################################################
+We can modify the output of a definition by overriding the 'process' function.
+This is done like so.
+
+grammar = new Grammar
+grammar.root.add 'test',
+    process: ->
+        'overridden output'
+
+# Shortcut for the method above if you just want to override 'process' and not
+# provide any other options to the definition.
+grammar.root.add 'alternative', ->
+    'overridden alternative'
+
+parser = new Parser grammar
+console.log parser.parse 'test'
+
+Which would output the following
+AstNode {
+    definition: (<.root>: `test`),
+    data: 'overridden output',
+    start: 0,
+    end: 4
+}
+
+The process function is ALWAYS bound to a definition. We can see how the AstNode
+for the definition still exists but the data for the AstNode was changed to the
+returned value of the process function. This has the advantage that our process
+function can return any type and we will still maintain some of the information
+associated with our AstNode, such as the start and end indexes.
+
+However, we lost the information associated with the AstNode for the Constant,
+in this case it was not a problem as our definition's AstNode happened to have
+the same information as our Definition function, but in general we may not be so
+lucky. Additionally it becomes a bit unwieldy to work with as everything becomes
+wrapped in its own AstNode.
+
+We could possibly solve this problem by hiding the extra AstNode information in
+the result of the process function (and using AstNode for definitions that don't
+have explicitly bound process functions).
