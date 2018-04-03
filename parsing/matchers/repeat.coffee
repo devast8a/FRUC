@@ -16,7 +16,7 @@ class Repeat extends Any
 
         if separator
             @tail = @add @rule
-            @repeat = @add [this, separator, @rule], repeat
+            @repeat = @add [this, separator, @rule]
         else
             @tail = @add @rule
-            @repeat = @add [this, @rule], repeat
+            @repeat = @add [this, @rule]

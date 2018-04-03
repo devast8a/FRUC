@@ -42,7 +42,9 @@ class Matcher
     matchersToSymbols: (matchers)->
         (@matcherToSymbol matcher for matcher in matchers)
 
-    postprocess: -> throw new Error "#{@constructor.name} must implement #{@constructor.name}::postprocess"
+    postprocess: (data, location, reject)->
+        [this, data, location]
+
     getNodes: -> throw new Error "#{@constructor.name} must implement #{@constructor.name}::getNodes"
     generate: -> throw new Error "#{@constructor.name} must implement #{@constructor.name}::generate"
 

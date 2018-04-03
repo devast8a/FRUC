@@ -3,37 +3,12 @@ Flags = require '../grammar/flags'
 
 Matcher = require './matcher'
 
-preprocess = (data, location, reject)->
-    end = AstNode.getEnd data, location
-
-    if @options.process?
-        stripped = []
-        for node in data
-            if node.definition.ignoreOutput
-                continue
-
-            if node.definition.parent.ignoreOutput
-                continue
-
-            stripped.push node
-
-        data = @options.process stripped, location, reject
-
-    if data == reject
-        return reject
-
-    return new AstNode this, data, location, end
-
 module.exports =
 class Definition extends Matcher
     @flags |= Flags.ADD_DIRECTLY_AS_RULE
     @flags |= Flags.INHERIT_PARENT_ID
 
     init: (@definition)->
-        pp = @options.preprocess
-        if pp?
-            @postprocess = pp
-
         if @definition == Matcher.Empty
             @matchers = []
             @symbols = []
@@ -64,5 +39,3 @@ class Definition extends Matcher
             "[#{@parent}: empty]"
         else
             "[#{@parent}: #{@matchers.join(" ")}]"
-
-    postprocess: preprocess
