@@ -36,6 +36,6 @@ class Definition extends Matcher
 
     toString: ->
         if @matchers.length == 0
-            "[#{@parent}: empty]"
+            "(#{@parent}: empty)"
         else
-            "[#{@parent}: #{@matchers.join(" ")}]"
+            "(#{@parent}: #{@matchers.join(" ")})"
