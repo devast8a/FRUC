@@ -42,8 +42,38 @@ class Matcher
     matchersToSymbols: (matchers)->
         (@matcherToSymbol matcher for matcher in matchers)
 
+    # Nearley post processing function, keep a reference to the matcher and the location
     postprocess: (data, location, reject)->
         [this, data, location]
+
+    preprocess: (data, location)->
+        nodes = data.map (node)->node[0].preprocess node[1], node[2]
+        output = []
+        for i in [0...nodes.length]
+            if data[i][0].ignoreOutput or data[i][0].parent?.ignoreOutput
+                continue
+            output.push nodes[i]
+
+        if nodes.length > 0
+            md = nodes[nodes.length - 1].metadata
+            end = md[md.length - 1].end
+        else
+            end = location
+
+        if @options.process?
+            output = @options.process output
+        else if output.length == 1
+            output = output[0]
+
+        if not output.metadata?
+            output.metadata = []
+        output.metadata.push {
+            definition: this
+            start: location
+            end: end
+        }
+
+        return output
 
     getNodes: -> throw new Error "#{@constructor.name} must implement #{@constructor.name}::getNodes"
     generate: -> throw new Error "#{@constructor.name} must implement #{@constructor.name}::generate"

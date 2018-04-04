@@ -15,11 +15,20 @@ class Constant extends Matcher
 
     toString: -> "`#{@value}`"
 
-    postprocess: (data, location)->
-        data = data.join ''
-        return new AstNode this, data, location, location + data.length
-
     getNodes: -> false
     generate: (tokens)-> tokens.push @value
 
     ignoreOutput: true
+
+    # Function that handles the processing 
+    preprocess: (data, location)->
+        data = data.join ''
+
+        node = new AstNode
+        node.data = data
+        node.metadata = [{
+            definition: this
+            start: location
+            end: location + data.length
+        }]
+        return node

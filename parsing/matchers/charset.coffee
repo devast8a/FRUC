@@ -42,5 +42,17 @@ class Charset extends Matcher
 
         tokens.push random @pool
 
-    postprocess: (data, location)->
-        return new AstNode this, data[0], location, location + 1
+    preprocess: (data, location)->
+        data = data[0]
+
+        node = new AstNode
+        node.data = data
+        node.metadata = [{
+            definition: this
+            start: location
+            end: location + 1
+        }]
+        return node
+
+    #postprocess: (data, location)->
+    #    return new AstNode this, data[0], location, location + 1
