@@ -12,6 +12,7 @@ class Regex extends Any
 
     init: (@regex)->
         super()
+        @options.type = 'string'
         @options.between = null
         ast = parse @regex.source
         @add @build_seq ast.tree
