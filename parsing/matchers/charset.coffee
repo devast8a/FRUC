@@ -1,5 +1,5 @@
 Flags = require '../grammar/flags'
-AstNode = require '../grammar/astnode'
+AstValue = require '../grammar/astvalue'
 
 Matcher = require './matcher'
 
@@ -42,16 +42,36 @@ class Charset extends Matcher
 
         tokens.push random @pool
 
-    preprocess: (data, location)->
+    preprocess: (data, location, map)->
         data = data[0]
 
-        node = new AstNode
-        node.data = data
-        node.metadata = [{
+        for entry in map
+            if location < entry.end
+                start_line = entry.line
+                start_column = location - entry.start
+                break
+
+        end = location + data.length
+        for entry in map
+            if end < entry.end
+                end_line = entry.line
+                end_column = end - entry.start
+                break
+
+        node = new AstValue data
+        node.metadata.push {
             definition: this
-            start: location
-            end: location + 1
-        }]
+            start: {
+                offset: location
+                line: start_line + 1
+                column: start_column + 1
+            }
+            end: {
+                offset: end
+                line: end_line + 1
+                column: end_column + 1
+            }
+        }
         return node
 
     #postprocess: (data, location)->

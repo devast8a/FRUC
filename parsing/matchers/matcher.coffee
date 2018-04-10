@@ -1,8 +1,14 @@
+AstNode = require '../grammar/astnode'
+AstValue = require '../grammar/astvalue'
+
 module.exports =
 class Matcher
     @flags = 0
 
     init: ->
+
+    toString: -> "#{@constructor.name}"
+    inspect: -> @toString()
 
     getOption: (name)->
         obj = this
@@ -46,8 +52,8 @@ class Matcher
     postprocess: (data, location, reject)->
         [this, data, location]
 
-    preprocess: (data, location)->
-        nodes = data.map (node)->node[0].preprocess node[1], node[2]
+    preprocess: (data, location, map)->
+        nodes = data.map (node)->node[0].preprocess node[1], node[2], map
         output = []
         for i in [0...nodes.length]
             if data[i][0].ignoreOutput or data[i][0].parent?.ignoreOutput
@@ -62,15 +68,29 @@ class Matcher
 
         if @options.process?
             output = @options.process output
+            if not (output instanceof AstNode)
+                output = new AstValue output
         else if output.length == 1
             output = output[0]
+        else
+            output = new AstNode output...
 
-        if not output.metadata?
-            output.metadata = []
+        # Get line and column information
+        for entry in map
+            if location < entry.end
+                line = entry.line
+                column = location - entry.start
+                break
+
         output.metadata.push {
             definition: this
-            start: location
+            start: {
+                offset: location
+                line: line + 1
+                column: column + 1
+            }
             end: end
+            nodes: data
         }
 
         return output
