@@ -80,6 +80,27 @@ class TokenStream
         @pushText()
         return @tokens
 
+Rule = require './matchers/rule'
+AstValue = require './grammar/astvalue'
+
+unparse = (grammar, ast, matcher, tokens)->
+    index = 0
+    for child in matcher.matchers
+        if child instanceof Rule
+            if not child.ignoreOutput
+                unparse_rule grammar, ast.childNodes[index++], child, tokens
+        else
+            child.unparse tokens
+
+unparse_rule = (grammar, ast, _, tokens)->
+    if ast instanceof AstValue
+        tokens.push ast.data
+    else
+        for matcher in grammar.matchers
+            if ast.constructor == matcher.options.astnode
+                unparse grammar, ast, matcher, tokens
+                break
+
 module.exports =
 class Generator
     constructor: (@grammar)->
@@ -93,5 +114,19 @@ class Generator
         tokens = new TokenStream
         for n in path
             n.generate tokens
+
+        return tokens.getTokens()
+
+    unparse: (ast)->
+        tokens = new TokenStream
+
+        for node in ast.childNodes
+            # Find target rule to unparse
+            for matcher in @grammar.matchers
+                if node.constructor == matcher.options.astnode
+                    # Figure out which parts need to be unparsed
+                    unparse @grammar, node, matcher, tokens
+                    break
+            tokens.push ';\n'
 
         return tokens.getTokens()
