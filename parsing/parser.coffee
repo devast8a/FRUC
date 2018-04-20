@@ -40,6 +40,6 @@ class Parser
         if results.length != 1
             for result in results
                 console.log fmt.format result
-            throw new Error "#{parser.results.length}"
+            throw new Error "Expecting 1 parser result, got #{parser.results.length}"
 
         return results[0]
