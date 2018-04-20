@@ -1,28 +1,6 @@
 Grammar = require 'parsing/grammar'
 Parser = require 'parsing/parser'
 
-describe 'Matcher', ->
-    it 'is removed when Matcher::remove is called', ->
-        y = null
-
-        grammar = new Grammar
-        grammar.define ->
-            grammar.root.add @rule
-
-            x = @rule.add ['x']
-            y = @rule.add ['y']
-
-        parser = new Parser grammar
-
-        parser.parse 'x'
-        parser.parse 'y'
-
-        y.remove()
-
-        parser.parse 'x'
-        expect(-> parser.parse 'y').toThrow()
-        return
-
 describe 'Grammar::between', ->
     it 'is inserted between sequences of symbols', ->
         grammar = new Grammar
