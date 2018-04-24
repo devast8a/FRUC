@@ -4,7 +4,10 @@ RepeatMatcher = require '../matchers/repeat'
 TokenMatcher = require '../matchers/token'
 
 exports.Opt =
-Opt = (rule, options)-> new Builder OptionalMatcher, options, rule
+Opt = (rule, options)->
+    optional = new Builder OptionalMatcher, options, rule
+    optional.optional = true
+    return optional
 
 exports.Rep =
 Rep = (rule, options)-> new Builder RepeatMatcher, options, rule
