@@ -81,7 +81,7 @@ class Matcher
     postprocess: (data, location, reject)->
         [this, data, location]
 
-    preprocess: (data, location, map)->
+    preprocess: (data, location, map, ignore_process)->
         nodes = data.map (node)->node[0].preprocess node[1], node[2], map
         output = []
         for i in [0...nodes.length]
@@ -95,7 +95,7 @@ class Matcher
         else
             end = location
 
-        if @options.process?
+        if @options.process? and !ignore_process
             output = @options.process output
             if not (output instanceof AstNode)
                 output = new AstValue output

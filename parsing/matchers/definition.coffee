@@ -9,6 +9,9 @@ class Definition extends Matcher
     @flags |= Flags.INHERIT_PARENT_ID
 
     init: (@definition)->
+        if @getOption('preprocess')?
+            @postprocess = @getOption 'preprocess'
+
         if @definition == Matcher.Empty
             @matchers = []
             @symbols = []
