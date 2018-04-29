@@ -36,8 +36,14 @@ importSpace = (grammar)->
     SPACE_NL.noBetween = true
     SPACE_NL.ignoreOutput = true
 
+    NEWLINE = grammar.rule ':NEWLINE'
+    NEWLINE.add /[ \t]*[\r\n][ \t\r\n]*/
+    NEWLINE.noBetween = true
+    NEWLINE.ignoreOutput = true
+
     return {
         SPACE: SPACE
         NO_SPACE: NO_SPACE
         SPACE_NL: SPACE_NL
+        NEWLINE: NEWLINE
     }
