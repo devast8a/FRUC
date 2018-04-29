@@ -1,4 +1,4 @@
-AstNode = require '../grammar/astnode'
+AstValue = require '../grammar/astvalue'
 Flags = require '../grammar/flags'
 
 Matcher = require './matcher'
@@ -11,13 +11,42 @@ class Token extends Matcher
         @symbols = [this]
 
     test: (token)->
-        token.constructor == Object and token.name == @token
+        token.constructor == Object and token.token == @token
 
     toString: -> "%#{@token}"
 
-    postprocess: (data, location)->
-        # Not sure what to return here
-        return new AstNode this, data, location, location + 1
-
     getNodes: -> false
     generate: (tokens)-> tokens.push {name: @token}
+    ignoreOutput: true
+
+    preprocess: (data, location, map)->
+        data = data[0]
+
+        for entry in map
+            if location < entry.end
+                start_line = entry.line
+                start_column = location - entry.start
+                break
+
+        end = location + data.length
+        for entry in map
+            if end < entry.end
+                end_line = entry.line
+                end_column = end - entry.start
+                break
+
+        node = new AstValue data
+        node.metadata.push {
+            definition: this
+            start: {
+                offset: location
+                line: start_line + 1
+                column: start_column + 1
+            }
+            end: {
+                offset: end
+                line: end_line + 1
+                column: end_column + 1
+            }
+        }
+        return node

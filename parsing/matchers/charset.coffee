@@ -16,10 +16,15 @@ class Charset extends Matcher
     @flags |= Flags.ADD_DIRECTLY_AS_RULE
 
     init: (regex)->
+        @symbols = [this]
         @setRegex regex
 
     setRegex: (@regex)->
-        @symbols = [@regex]
+
+    test: (input)->
+        if typeof(input) == 'string'
+            return @regex.test input
+        return false
 
     toString: -> "/#{@regex.source}/"
 
@@ -73,6 +78,3 @@ class Charset extends Matcher
             }
         }
         return node
-
-    #postprocess: (data, location)->
-    #    return new AstNode this, data[0], location, location + 1
