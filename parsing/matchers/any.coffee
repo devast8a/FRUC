@@ -18,6 +18,9 @@ class Any extends Matcher
             options.process = (data)->
                 new cons data...
 
+        if options? and options.ignore
+            @ignoreOutput = options.ignore
+
         matcher = @createMatcher Definition, options, definition
         @definitions.push matcher
         return matcher
