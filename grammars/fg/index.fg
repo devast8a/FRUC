@@ -1,0 +1,85 @@
+# Metadata
+name: 'FRUC Grammar Language'
+author: 'devast8a'
+
+# Document structure
+@root = WS? statements WS? :: Document
+
+################################################################################
+#Statements
+################################################################################
+statements = statement++NEWLINE
+
+# Rules
+statement = rule
+rule = reference++@SPACE '=' definition tag? rule_body? :: Rule
+    rule_body = INDENT statements DEDENT
+    rule_body = processor :: Processor
+    tag = '::' reference
+
+# Options
+statement = option
+option = identifier ':' atom :: Option
+
+# Processor
+statement = processor :: Processor
+processor = parameters? '->' @NO_SPACE processor_body
+    parameters = '(' parameter++',' ')'
+    parameter = identifier
+    processor_body = /[^\n]+/
+    processor_body = INDENT line+ DEDENT
+        line = /[^\n]+\n/
+
+################################################################################
+# Definitions
+################################################################################
+definition = matcher++@SPACE :: Definition
+
+matcher = atom
+matcher = repetition
+
+# Identifier
+identifier = /[a-zA-Z_]+/ :: Identifier
+
+# Reference
+atom reference = /[@]/? @NO_SPACE identifier++'.' :: Reference
+
+# Strings
+# We can't yet inline this because of limitations in codegen
+atom = string
+string = /'[^\r\n']*'/ :: String
+string = /"[^\r\n"]*"/ :: String
+
+# Regex
+atom regex = /\/[^\n]+\// :: Regex
+
+# Tokens
+atom token = '%' @NO_SPACE identifier :: Token
+
+# Repetition
+repetition = atom '?'       :: Opt
+repetition = atom '+'       :: Rep
+repetition = atom '*'       :: OptRep
+repetition = atom '++' atom :: Rep
+repetition = atom '**' atom :: OptRep
+
+################################################################################
+# Whitespace
+################################################################################
+@between = @SPACE?
+
+WS = WS_+
+    WS_ = /[ \t\n]/
+    WS_ = /#[^\n]+\n/
+    ignore: @true
+
+NEWLINE = NEWLINE_? '\n' WS?
+    NEWLINE_ = /[ \t]+/
+    NEWLINE_ = /[ \t]*#[^\n]+/
+    ignore: @true
+
+INDENT = WS? %INDENT
+    ignore: @true
+
+DEDENT = WS? %DEDENT
+    ignore: @true
