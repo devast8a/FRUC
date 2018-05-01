@@ -1,7 +1,7 @@
 {expect} = require 'chai'
 
-Sink = require 'parsing/streams/sink'
-IndentationStream = require 'parsing/streams/indentation'
+Sink = require 'parser/streams/sink'
+IndentationStream = require 'parser/streams/indentation'
 
 run = (input...)->
     sink = new Sink

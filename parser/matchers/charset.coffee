@@ -1,5 +1,5 @@
 Flags = require '../grammar/flags'
-AstValue = require '../grammar/astvalue'
+{Value} = require '../ast'
 
 Matcher = require './matcher'
 
@@ -63,7 +63,7 @@ class Charset extends Matcher
                 end_column = end - entry.start
                 break
 
-        node = new AstValue data
+        node = new Value data
         node.metadata.push {
             definition: this
             start: {

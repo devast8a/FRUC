@@ -1,6 +1,6 @@
-AstNode = require './astnode'
+Node = require './node'
 
 module.exports =
-class AstValue extends AstNode
+class Value extends Node
     constructor: (@data)->
         super()

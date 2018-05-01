@@ -1,5 +1,5 @@
 module.exports =
-class AstNode
+class Node
     constructor: (@childNodes...)->
         if @init?
             @init @childNodes...

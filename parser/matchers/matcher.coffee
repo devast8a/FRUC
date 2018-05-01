@@ -1,5 +1,4 @@
-AstNode = require '../grammar/astnode'
-AstValue = require '../grammar/astvalue'
+{Node, Value} = require '../ast'
 Builder = require '../grammar/builder'
 
 module.exports =
@@ -97,12 +96,12 @@ class Matcher
 
         if @options.process? and !ignore_process
             output = @options.process output
-            if not (output instanceof AstNode)
-                output = new AstValue output
+            if not (output instanceof Node)
+                output = new Value output
         else if output.length == 1
             output = output[0]
         else
-            output = new AstNode output...
+            output = new Node output...
 
         # Get line and column information
         for entry in map

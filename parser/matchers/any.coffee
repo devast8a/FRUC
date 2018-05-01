@@ -1,6 +1,6 @@
 Matcher = require './matcher'
 Definition = require './definition'
-AstNode = require '../grammar/astnode'
+{Node} = require '../ast'
 
 module.exports =
 class Any extends Matcher
@@ -12,7 +12,7 @@ class Any extends Matcher
         if typeof(options) == 'function'
             options = {process: options}
 
-        if options? and options.process? and options.process.prototype instanceof AstNode
+        if options? and options.process? and options.process.prototype instanceof Node
             cons = options.process
             options.astnode = cons
             options.process = (data)->

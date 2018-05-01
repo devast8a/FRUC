@@ -1,5 +1,4 @@
 nearley = require 'nearley'
-AstNode = require './grammar/astnode'
 
 IndentationStream = require './streams/indentation'
 Joiner = require './streams/joiner'

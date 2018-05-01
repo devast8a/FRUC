@@ -1,6 +1,5 @@
 Any = require './any'
-AstNode = require '../grammar/astnode'
-AstValue = require '../grammar/astvalue'
+{Node, Value} = require '../ast'
 
 repeat = (data)->
     data[0].data.concat data[1]
@@ -19,7 +18,7 @@ class Repeat extends Any
         if type == 'string'
             @tail = @add @rule,
                 ([data])->
-                    new AstValue data.data
+                    new Value data.data
 
             @repeat = @add [this, @rule],
                 ([list, data])->
@@ -30,7 +29,7 @@ class Repeat extends Any
             if separator
                 @tail = @add @rule,
                     ([data])->
-                        new AstNode data
+                        new Node data
 
                 @repeat = @add [this, separator, @rule],
                     ([list, data])->
@@ -40,7 +39,7 @@ class Repeat extends Any
             else
                 @tail = @add @rule,
                     ([data])->
-                        new AstNode data
+                        new Node data
 
                 @repeat = @add [this, @rule],
                     ([list, data])->

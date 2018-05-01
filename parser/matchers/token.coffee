@@ -1,29 +1,26 @@
-AstValue = require '../grammar/astvalue'
+{Value} = require '../ast'
 Flags = require '../grammar/flags'
 
 Matcher = require './matcher'
 
 module.exports =
-class Constant extends Matcher
+class Token extends Matcher
     @flags |= Flags.ADD_DIRECTLY_AS_RULE
 
-    init: (value)->
-        @setValue value
+    init: (@token)->
+        @symbols = [this]
 
-    setValue: (@value)->
-        @symbols = (literal: c for c in @value)
+    test: (token)->
+        token.constructor == Object and token.token == @token
 
-    toString: -> "`#{@value}`"
+    toString: -> "%#{@token}"
 
     getNodes: -> false
-    generate: (tokens)-> tokens.push @value
-    unparse: (tokens)-> tokens.push @value
-
+    generate: (tokens)-> tokens.push {name: @token}
     ignoreOutput: true
 
-    # Function that handles the processing 
     preprocess: (data, location, map)->
-        data = data.join ''
+        data = data[0]
 
         for entry in map
             if location < entry.end
@@ -38,7 +35,7 @@ class Constant extends Matcher
                 end_column = end - entry.start
                 break
 
-        node = new AstValue data
+        node = new Value data
         node.metadata.push {
             definition: this
             start: {
@@ -47,7 +44,7 @@ class Constant extends Matcher
                 column: start_column + 1
             }
             end: {
-                offset: location + data.length
+                offset: end
                 line: end_line + 1
                 column: end_column + 1
             }

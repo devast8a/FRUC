@@ -1,4 +1,3 @@
-AstNode = require '../grammar/astnode'
 Flags = require '../grammar/flags'
 
 Matcher = require './matcher'

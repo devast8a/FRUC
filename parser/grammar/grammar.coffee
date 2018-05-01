@@ -1,10 +1,10 @@
-Flags = require './grammar/flags'
-Builder = require './grammar/builder'
+Flags = require './flags'
+Builder = require './builder'
 
-Rule = require './matchers/rule'
-Constant = require './matchers/constant'
-Matcher = require './matchers/matcher'
-Regex = require './matchers/regex'
+Rule = require '../matchers/rule'
+Constant = require '../matchers/constant'
+Matcher = require '../matchers/matcher'
+Regex = require '../matchers/regex'
 
 module.exports =
 class Grammar

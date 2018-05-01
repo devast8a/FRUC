@@ -1,7 +1,8 @@
 {expect} = require 'chai'
 
-Grammar = require 'parsing/grammar'
-Parser = require 'parsing/parser'
+Grammar = require 'parser/grammar'
+Parser = require 'parser'
+{Opt, Rep, OptRep} = require 'parser/grammar/helpers'
 
 run = (input, value)->
 class Tester
@@ -18,8 +19,6 @@ class Tester
         parser = new Parser @grammar
         expect(-> parser.parse input).throw(Error, text)
         return this
-
-{Opt, Rep, OptRep} = require 'parsing/grammar/helpers'
 
 ################################################################################
 
