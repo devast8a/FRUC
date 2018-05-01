@@ -2,6 +2,7 @@ nearley = require 'nearley'
 AstNode = require './grammar/astnode'
 
 IndentationStream = require './streams/indentation'
+Joiner = require './streams/joiner'
 
 Fmt = require 'fmt'
 fmt = new Fmt
@@ -44,7 +45,7 @@ class Parser
         map.push {start: prev, end: input.length + 1, line: line++}
 
         parser = new NearleyParser @grammar.ParserRules, @grammar.ParserStart
-        stream = new IndentationStream parser
+        stream = new IndentationStream new Joiner parser
 
         stream.feed input
         stream.end()

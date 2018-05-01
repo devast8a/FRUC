@@ -36,54 +36,54 @@ it 'injects indentation tokens', ->
     return
 
 it 'calls feed for each line', ->
-    expect(run 'a\nb\n').deep.equal(['a\n', 'b\n'])
-    expect(run 'a\nb\nc').deep.equal(['a\n', 'b\n', 'c'])
+    expect(run 'a\nb\n').deep.equal(['a', '\n', 'b', '\n'])
+    expect(run 'a\nb\nc').deep.equal(['a', '\n', 'b', '\n', 'c'])
     return
 
 it 'injects INDENT after newline', ->
     expect(run 'a\n    b').deep.equal(
-        ['a\n', INDENT, 'b', DEDENT]
+        ['a', '\n', INDENT, 'b', DEDENT]
     )
     return
 
-it 'injects DEDENT after newline', ->
+it 'injects DEDENT before newline', ->
     expect(run 'a\n    b\nc').deep.equal(
-        ['a\n', INDENT, 'b\n', DEDENT, 'c']
+        ['a', '\n', INDENT, 'b', DEDENT, '\n', 'c']
     )
     return
 
 it 'handles multiple indentations correctly', ->
     expect(run 'a\n  b\nc\n  d\n').deep.equal(
-        ['a\n', INDENT, 'b\n', DEDENT, 'c\n', INDENT, 'd\n', DEDENT]
+        ['a', '\n', INDENT, 'b', DEDENT, '\n', 'c', '\n', INDENT, 'd', DEDENT, '\n']
     )
     return
 
 it 'injects multiple DEDENT', ->
     expect(run 'a\n b\n  c\nd').deep.equal(
-        ['a\n', INDENT, 'b\n', INDENT, 'c\n', DEDENT, DEDENT, 'd']
+        ['a', '\n', INDENT, 'b', '\n', INDENT, 'c', DEDENT, DEDENT, '\n', 'd']
     )
     return
 
 it 'injects multiple DEDENT automatically', ->
     expect(run 'a\n b\n  c').deep.equal(
-        ['a\n', INDENT, 'b\n', INDENT, 'c', DEDENT, DEDENT]
+        ['a', '\n', INDENT, 'b', '\n', INDENT, 'c', DEDENT, DEDENT]
     )
     return
 
 it 'injects DEDENT after ending newline automatically', ->
     expect(run 'a\n b\n  c\n').deep.equal(
-        ['a\n', INDENT, 'b\n', INDENT, 'c\n', DEDENT, DEDENT]
+        ['a', '\n', INDENT, 'b', '\n', INDENT, 'c', DEDENT, DEDENT, '\n']
     )
     return
 
 it 'handles all newline formats', ->
     expect(run 'a\r b\r\nc\n').deep.equal(
-        ['a\r', INDENT, 'b\r\n', DEDENT, 'c\n']
+        ['a', '\r', INDENT, 'b', DEDENT, '\r\n', 'c', '\n']
     )
     return
 
 it 'injects DEDENT and INDENTS on mixed indentation', ->
     expect(run 'a\n b\n  c\n\t\td').deep.equal(
-        ['a\n', INDENT, 'b\n', INDENT, 'c\n', DEDENT, DEDENT, INDENT, 'd', DEDENT]
+        ['a', '\n', INDENT, 'b', '\n', INDENT, 'c', DEDENT, DEDENT, '\n', INDENT, 'd', DEDENT]
     )
     return

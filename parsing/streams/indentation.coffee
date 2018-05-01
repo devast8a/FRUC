@@ -1,3 +1,23 @@
+# A Stream that injects processes indentation on each newline and emits
+# INDENT when the previous indentation is a subset of the new indentation
+# DEDENT when the previous indentation isn't the same as the current indentation
+#
+# INDENT is injected AFTER a newline
+# DEDENT is injected BEFORE a nwline
+#
+# Eg.
+# A
+#       B
+# C
+#
+# Will be processed as
+# A NEWLINE INDENT B DEDENT NEWLINE C
+#
+# The content of blank lines are ignored
+#
+# Note: You will probably want to run Joiner or something similar after this
+#   Stream as each new line results in two feed calls.
+
 INDENT = {token: 'INDENT'}
 DEDENT = {token: 'DEDENT'}
 
@@ -11,7 +31,9 @@ class Indentation
 
     constructor: (@output)->
         @stack = ['']
-        @newline = true
+
+        @atLineStart = true
+        @lineEndsBuffer = []
 
     handleIndent: (line)->
         if not @newline
@@ -39,6 +61,7 @@ class Indentation
         # Indent
         else if start.startsWith current
             @stack.push start
+            @flushBuffer()
             @output.feed INDENT
             return line
 
@@ -53,12 +76,27 @@ class Indentation
                 # Mixed indentation
                 #   Wasn't the same as any indents in the stack
                 @stack.push start
+                @flushBuffer()
                 @output.feed INDENT
 
             return line
 
+    flushBuffer: ->
+        if @lineEndsBuffer.length > 0
+            for end in @lineEndsBuffer
+                @output.feed end
+            @lineEndsBuffer.length = 0
+
+    getBuffer: ->
+        if @lineEndsBuffer.length > 0
+            output = @lineEndsBuffer.join ''
+            @lineEndsBuffer.length = 0
+            return output
+        return ''
+
     push: (input)->
         if typeof(input) != 'string'
+            @flushBuffer()
             @output.feed input
             return
 
@@ -69,12 +107,16 @@ class Indentation
             line = @handleIndent line
 
             if index + 1 < end
-                @output.feed line + lines[index + 1]
+                @flushBuffer()
+                @output.feed line
+                @lineEndsBuffer.push lines[index + 1]
                 @newline = true
             else if line.length != 0
+                @flushBuffer()
                 @output.feed line
                 @newline = false
             else if index == 0
+                @flushBuffer()
                 @output.feed line
 
     feed: (input)->
@@ -88,4 +130,5 @@ class Indentation
         while @stack.length > 1
             @output.feed DEDENT
             @stack.pop()
+        @flushBuffer()
         @output.end()
