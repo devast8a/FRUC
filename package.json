@@ -8,6 +8,7 @@
     "regulex": "0.0.2"
   },
   "devDependencies": {
+    "chai": "^4.1.2",
     "coffeescript": "^2.2.4",
     "jest": "^22.4.2",
     "jest-preset-coffeescript": "^1.0.0"
