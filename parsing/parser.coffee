@@ -1,9 +1,27 @@
 nearley = require 'nearley'
 AstNode = require './grammar/astnode'
 
+IndentationStream = require './streams/indentation'
+
 Fmt = require 'fmt'
 fmt = new Fmt
     filterByKey: Fmt.reject ['metadata', 'map']
+
+class NearleyParser extends nearley.Parser
+    feed: (input)->
+        if input instanceof Array
+            for element in input
+                if typeof(element) == 'string'
+                    super element
+                else
+                    super [element]
+        else
+            if typeof(input) == 'string'
+                super input
+            else
+                super [input]
+
+    end: ->
 
 module.exports =
 class Parser
@@ -25,43 +43,11 @@ class Parser
             prev += 1
         map.push {start: prev, end: input.length + 1, line: line++}
 
-        parser = new nearley.Parser @grammar.ParserRules, @grammar.ParserStart
-        stack = ['']
-        prefix = /([ \t]*)([^\r\n]*)(\r\n|\r|\n)/g
-        firstLine = true
-        while match = prefix.exec input
-            [_, indent, data, newline] = match
+        parser = new NearleyParser @grammar.ParserRules, @grammar.ParserStart
+        stream = new IndentationStream parser
 
-            # Skip only whitespace lines
-            if indent.length == line.length
-                parser.feed newline
-                continue
-
-            last = stack[stack.length - 1]
-
-            if indent == last
-                parser.feed data
-                parser.feed newline
-            else if indent.startsWith last
-                stack.push indent
-                parser.feed [{token: 'INDENT'}]
-                parser.feed data
-                parser.feed newline
-            else if last.startsWith indent
-                while stack[stack.length - 1] != indent
-                    stack.pop()
-                    parser.feed [{token: 'DEDENT'}]
-                parser.feed '\n'
-                parser.feed data
-                parser.feed newline
-            else
-                throw new "Indentation is inconsistent"
-
-            firstLine = false
-
-        while stack.length > 1
-            stack.pop()
-            parser.feed [{token: 'DEDENT'}]
+        stream.feed input
+        stream.end()
         
         results = parser.results.map (ast)->
             ast = ast[0].preprocess ast[1], ast[2], map
