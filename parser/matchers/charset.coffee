@@ -1,4 +1,3 @@
-Flags = require '../grammar/flags'
 {Value} = require '../ast'
 
 Matcher = require './matcher'
@@ -13,7 +12,7 @@ random = (seq)->
 # Similar to Any, but optimized for characters
 module.exports =
 class Charset extends Matcher
-    @flags |= Flags.ADD_DIRECTLY_AS_RULE
+    @flags |= Matcher.Flags.ADD_DIRECTLY_AS_RULE
 
     init: (regex)->
         @symbols = [this]

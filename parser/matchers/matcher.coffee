@@ -6,7 +6,15 @@ INHERIT_PARENT_ID =     0x02
 
 module.exports =
 class Matcher
+    @Flags = {
+        ADD_DIRECTLY_AS_RULE: ADD_DIRECTLY_AS_RULE
+        INHERIT_PARENT_ID: INHERIT_PARENT_ID
+    }
+
     @flags = 0
+
+    hasFlag: (flag)->
+        (@constructor.flags & flag) > 0
 
     constructor: (@grammar, @options, args)->
         @options ?= {}
@@ -26,9 +34,6 @@ class Matcher
 
         @grammar.matchers.push this
         @init args...
-
-    hasFlag: (flag)->
-        (@constructor.flags & flag) > 0
 
     init: ->
 

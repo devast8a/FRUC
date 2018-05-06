@@ -1,11 +1,9 @@
-Flags = require '../grammar/flags'
-
 Matcher = require './matcher'
 
 module.exports =
 class Definition extends Matcher
-    @flags |= Flags.ADD_DIRECTLY_AS_RULE
-    @flags |= Flags.INHERIT_PARENT_ID
+    @flags |= Matcher.Flags.ADD_DIRECTLY_AS_RULE
+    @flags |= Matcher.Flags.INHERIT_PARENT_ID
 
     init: (@definition)->
         if @getOption('preprocess')?

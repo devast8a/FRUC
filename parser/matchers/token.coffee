@@ -1,11 +1,10 @@
 {Value} = require '../ast'
-Flags = require '../grammar/flags'
 
 Matcher = require './matcher'
 
 module.exports =
 class Token extends Matcher
-    @flags |= Flags.ADD_DIRECTLY_AS_RULE
+    @flags |= Matcher.Flags.ADD_DIRECTLY_AS_RULE
 
     init: (@token)->
         @symbols = [this]
