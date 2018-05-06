@@ -16,12 +16,8 @@
     "nyc": "^11.7.1"
   },
   "jest": {
-    "preset": "jest-preset-coffeescript"
-  },
-  "nyc": {
-    "require": [
-      "coffee-coverage/register-istanbul"
-    ]
+    "preset": "jest-preset-coffeescript",
+    "testRegex": ".+\\.test\\.coffee$"
   },
   "scripts": {
     "test": "jest"
