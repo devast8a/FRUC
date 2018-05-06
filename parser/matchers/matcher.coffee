@@ -1,9 +1,34 @@
 {Node, Value} = require '../ast'
 Builder = require '../grammar/builder'
 
+ADD_DIRECTLY_AS_RULE =  0x01
+INHERIT_PARENT_ID =     0x02
+
 module.exports =
 class Matcher
     @flags = 0
+
+    constructor: (@grammar, @options, args)->
+        @options ?= {}
+        @parent = @options.parent ? null
+
+        if @hasFlag ADD_DIRECTLY_AS_RULE
+            @grammar.ParserRules.push this
+
+        if @hasFlag INHERIT_PARENT_ID
+            if not @parent?
+                throw new Error "Expected parent to be filled"
+            @id = @parent.id
+            @name = @parent.name
+        else
+            @id = @grammar.getNextId()
+            @name = @id.toString()
+
+        @grammar.matchers.push this
+        @init args...
+
+    hasFlag: (flag)->
+        (@constructor.flags & flag) > 0
 
     init: ->
 

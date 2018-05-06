@@ -1,4 +1,3 @@
-Flags = require './flags'
 Builder = require './builder'
 
 Rule = require '../matchers/rule'
@@ -32,31 +31,9 @@ class Grammar
         @ParserStart = @root.name
 
     createMatcher: (constructor, options, args...)->
-        options ?= {}
-        matcher = new constructor
+        new constructor this, options, args
 
-        matcher.grammar = this
-        
-        if (constructor.flags & Flags.ADD_DIRECTLY_AS_RULE) > 0
-            @ParserRules.push matcher
-
-        if (constructor.flags & Flags.INHERIT_PARENT_ID) > 0
-            if not options.parent?
-                throw new Error "Expected parent to be filled"
-
-            matcher.id = options.parent.id
-            matcher.name = options.parent.name
-            matcher.parent = options.parent
-        else
-            matcher.id = @lastId++
-            matcher.name = matcher.id.toString()
-            matcher.parent = options.parent
-
-        matcher.options = options
-        @matchers.push matcher
-        matcher.init args...
-
-        return matcher
+    getNextId: -> @lastId++
 
     rule: (name, options = null)->
         if @rules.has name
