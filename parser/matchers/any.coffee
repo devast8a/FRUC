@@ -2,21 +2,21 @@ Matcher = require './matcher'
 Definition = require './definition'
 {Node} = require '../ast'
 
-module.exports =
-class Any extends Matcher
-    init: ->
+class Collection extends Matcher
+    init: (definitions)->
         @definitions = []
 
+        if definitions?
+            for definition in definitions
+                @add definition
 
     add: (definition, options)->
         if typeof(options) == 'function'
             options = {process: options}
 
-        if options? and options.process? and options.process.prototype instanceof Node
-            cons = options.process
-            options.astnode = cons
-            options.process = (data)->
-                new cons data...
+        #TODO: Try and remove these from any
+        if options? and options.noBetween
+            @noBetween = true
 
         if options? and options.ignore
             @ignoreOutput = options.ignore
@@ -25,7 +25,32 @@ class Any extends Matcher
         @definitions.push matcher
         return matcher
 
-    toString: -> "<##{@name}>"
+    remove: (matcher)->
+        index = @definitions.indexOf matcher
 
-    getNodes: -> (d.matchers for d in @definitions)
-    generate: ->
+        if index < 0
+            return false
+
+        @definitions[index] = @definitions[@definitions.length - 1]
+        @definitions.length -= 1
+        return true
+
+    toString: -> "Collection()"
+
+module.exports =
+class Any extends Collection
+    optionalCount: 0
+
+    add: (definition, options)->
+        matcher = super definition, options
+        if matcher.optional
+            @optionalCount++
+            @optional = true
+        return matcher
+
+    remove: (matcher)->
+        result = super matcher
+        if matcher.optional and result
+            @optionalCount--
+            @optional = @optionalCount > 0
+        return result

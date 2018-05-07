@@ -44,7 +44,10 @@ class Parser
         map.push {start: prev, end: input.length + 1, line: line++}
 
         parser = new NearleyParser @grammar.ParserRules, @grammar.ParserStart
-        stream = new IndentationStream new Joiner parser
+        if @grammar.disable_indent
+            stream = parser
+        else
+            stream = new IndentationStream new Joiner parser
 
         stream.feed input
         stream.end()

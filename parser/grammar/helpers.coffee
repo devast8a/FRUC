@@ -2,6 +2,7 @@ Builder = require './builder'
 OptionalMatcher = require '../matchers/optional'
 RepeatMatcher = require '../matchers/repeat'
 TokenMatcher = require '../matchers/token'
+AnyMatcher = require '../matchers/any'
 
 exports.Opt =
 Opt = (rule, options)->
@@ -17,6 +18,9 @@ OptRep = (rule, options)-> Opt Rep(rule), options
 
 exports.Token =
 Token = (token, options)-> new Builder TokenMatcher, options, token
+
+exports.Any = (rules, options)->
+    new Builder AnyMatcher, options, rules
 
 exports.importSpace =
 importSpace = (grammar)->

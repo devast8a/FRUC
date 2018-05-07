@@ -111,7 +111,10 @@ class Matcher
             end = location
 
         if @options.process? and !ignore_process
-            output = @options.process output
+            if @options.process.prototype instanceof Node
+                output = new @options.process output...
+            else
+                output = @options.process output
             if not (output instanceof Node)
                 output = new Value output
         else if output.length == 1
