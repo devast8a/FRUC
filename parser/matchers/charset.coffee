@@ -12,9 +12,9 @@ random = (seq)->
 # Similar to Any, but optimized for characters
 module.exports =
 class Charset extends Matcher
-    @flags |= Matcher.Flags.ADD_DIRECTLY_AS_RULE
-
     init: (regex)->
+        @grammar.ParserRules.push this
+
         @symbols = [this]
         @setRegex regex
 

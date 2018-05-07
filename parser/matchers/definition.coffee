@@ -70,7 +70,12 @@ getDirection = (front, back, index)->
 
 module.exports =
 class Definition extends Matcher
-    @flags |= Matcher.Flags.INHERIT_PARENT_ID
+    setNameAndId: ->
+        if not @parent?
+            throw new Error "parent must be set when using Definition"
+
+        @id = @parent.id
+        @name = @parent.name
 
     init: (@definition)->
         @containers = []

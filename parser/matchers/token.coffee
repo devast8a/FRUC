@@ -4,9 +4,9 @@ Matcher = require './matcher'
 
 module.exports =
 class Token extends Matcher
-    @flags |= Matcher.Flags.ADD_DIRECTLY_AS_RULE
-
     init: (@token)->
+        @grammar.ParserRules.push this
+
         @symbols = [this]
 
     test: (token)->

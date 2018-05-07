@@ -4,9 +4,9 @@ Matcher = require './matcher'
 
 module.exports =
 class Constant extends Matcher
-    @flags |= Matcher.Flags.ADD_DIRECTLY_AS_RULE
-
     init: (value)->
+        @grammar.ParserRules.push this
+
         @setValue value
 
     setValue: (@value)->
