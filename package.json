@@ -12,12 +12,11 @@
     "coffee-coverage": "^3.0.0",
     "coffeescript": "^2.2.4",
     "jest": "^22.4.2",
-    "jest-coffee-preprocessor": "^1.0.0",
     "nyc": "^11.7.1"
   },
   "jest": {
     "transform": {
-      "^.+\\.coffee$": "<rootDir>/node_modules/jest-coffee-preprocessor/index.js"
+      "^.+\\.coffee$": "<rootDir>/tests/jest-preprocessors/coffee"
     },
     "moduleFileExtensions": [
       "coffee",
