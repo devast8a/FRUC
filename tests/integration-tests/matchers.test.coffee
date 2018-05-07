@@ -4,18 +4,17 @@ Grammar = require 'parser/grammar'
 Parser = require 'parser'
 {Opt, Rep, OptRep} = require 'parser/grammar/helpers'
 
-run = (input, value)->
 class Tester
     constructor: (rule)->
         @grammar = new Grammar
         @grammar.root.add rule, between: null
 
-    works: (input)->
+    ok: (input)->
         parser = new Parser @grammar
         parser.parse input
         return this
 
-    fails: (input, text = "Unexpected")->
+    throws: (input, text = "Unexpected")->
         parser = new Parser @grammar
         expect(-> parser.parse input).throw(Error, text)
         return this
@@ -24,61 +23,61 @@ class Tester
 
 test 'constant', ->
     new Tester 'a'
-    .works 'a'
-    .fails 'b'
-    .fails '', "Expecting 1"
+    .ok 'a'
+    .throws 'b'
+    .throws '', "Expecting 1"
     return
 
 test 'optional', ->
     new Tester Opt('a')
-    .works 'a'
-    .works ''
-    .fails 'aa'
-    .fails 'b'
+    .ok 'a'
+    .ok ''
+    .throws 'aa'
+    .throws 'b'
     return
 
 test 'repeat', ->
     new Tester Rep('a')
-    .works 'a'
-    .works 'aaaa'
-    .fails '', "Expecting 1"
-    .fails 'b'
+    .ok 'a'
+    .ok 'aaaa'
+    .throws '', "Expecting 1"
+    .throws 'b'
     return
 
 test 'optional-repeat', ->
     new Tester OptRep('a')
-    .works ''
-    .works 'a'
-    .works 'aaaa'
-    .fails 'b'
+    .ok ''
+    .ok 'a'
+    .ok 'aaaa'
+    .throws 'b'
     return
 
 ################################################################################
 
 test 'regex-constant', ->
     new Tester /a/
-    .works 'a'
-    .fails 'b'
-    .fails '', "Expecting 1"
+    .ok 'a'
+    .throws 'b'
+    .throws '', "Expecting 1"
     return
 
 test 'regex-charset', ->
     new Tester /[a-z]/
-    .works 'h'
-    .fails 'H'
-    .fails '', "Expecting 1"
+    .ok 'h'
+    .throws 'H'
+    .throws '', "Expecting 1"
     return
 
 test 'regex-repeat', ->
     new Tester /[a-z]+/
-    .works 'helloworld'
-    .fails 'HELLOWORLD'
-    .fails '', "Expecting 1"
+    .ok 'helloworld'
+    .throws 'HELLOWORLD'
+    .throws '', "Expecting 1"
     return
 
 test 'regex-repeat', ->
     new Tester /[a-z]+/
-    .works 'helloworld'
-    .fails 'HELLOWORLD'
-    .fails '', "Expecting 1"
+    .ok 'helloworld'
+    .throws 'HELLOWORLD'
+    .throws '', "Expecting 1"
     return
