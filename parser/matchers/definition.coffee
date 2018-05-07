@@ -2,37 +2,61 @@ Matcher = require './matcher'
 Builder = require '../grammar/builder'
 
 class Symbols
-    constructor: (@parent, @symbols)->
-        @name = @parent.name
+    constructor: (@grammar, [@symbols], @options)->
+        @parent = @options.parent
+        @name = @options.parent.name
 
     postprocess: (data, location, reject)->
         [@parent, data, location]
 
 class Empty extends Symbols
 
-class Optional extends Matcher
+class Any extends Matcher
+    class: null
+
+    init: (definitions)->
+        @definitions = []
+
+        if definitions?
+            for definition in definitions
+                @add definition
+
+    add: (definition, options)->
+        if typeof(options) == 'function'
+            options = {process: options}
+
+        matcher = @new @class, [definition], options
+        @definitions.push matcher
+        return matcher
+
+    toString: -> "Any()"
+
+class Optional extends Any
     @FRONT = 1
     @BACK = 2
     @MIDDLE = 3
     @NONE = 4
 
+    class: Symbols
+
     init: (@direction, @rule, between)->
+        super()
         rule = @rule.name
         between = between?.name
 
         switch @direction
             when Optional.FRONT
-                @match = new Symbols(this, [rule, between])
-                @empty = new Empty(this, [])
+                @match = @add [rule, between]
+                @empty = @add []
             when Optional.MIDDLE
-                @match = new Symbols(this, [between, rule, between])
-                @empty = new Empty(this, [between])
+                @match = @add [between, rule, between]
+                @empty = @add [between]
             when Optional.BACK
-                @match = new Symbols(this, [between, rule])
-                @empty = new Empty(this, [])
+                @match = @add [between, rule]
+                @empty = @add []
             when Optional.NONE
-                @match = new Symbols(this, [rule])
-                @empty = new Symbols(this, [])
+                @match = @add [rule]
+                @empty = @add []
             else
                 throw new Error 'Direction must be set'
 
@@ -55,7 +79,7 @@ class Definition extends Matcher
             @matchers = []
             @symbols = []
             @optional = true
-            @grammar.ParserRules.push new Symbols(this, @symbols)
+            @grammar.ParserRules.push @new Symbols, [@symbols]
         else
             between = @getOption 'between'
             matchers = @definitionToMatchers @definition
@@ -68,7 +92,7 @@ class Definition extends Matcher
                     return matcher
 
                 @symbols = @matchersToSymbols @matchers
-                @grammar.ParserRules.push new Symbols(this, @symbols)
+                @grammar.ParserRules.push @new Symbols, [@symbols]
             else
                 back = matchers.length
                 front = -1
@@ -84,7 +108,7 @@ class Definition extends Matcher
                         @new(Optional, [Optional.BACK, matcher, between]).name
 
                     for matcher, index in matchers
-                        container = new Symbols this, [matcher.name].concat(optionals[index..])
+                        container = @new Symbols, [[matcher.name].concat(optionals[index..])]
                         @containers.push container
                         @grammar.ParserRules.push container
                 else
@@ -110,7 +134,7 @@ class Definition extends Matcher
                         NOBETWEEN = matcher.noBetween or matcher.optional
 
                     @symbols = @matchersToSymbols @matchers
-                    @grammar.ParserRules.push new Symbols(this, @symbols)
+                    @grammar.ParserRules.push @new Symbols, [@symbols]
 
     toString: ->
         if @matchers.length == 0

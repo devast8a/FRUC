@@ -23,14 +23,14 @@ class Regex extends Any
     build: (node)->
         switch node.type
             when 'exact'
-                matcher = @createMatcher Constant, null, node.chars
+                matcher = @new Constant, [node.chars]
 
             when 'group'
-                matcher = @createMatcher Any
+                matcher = @new Any
                 matcher.add @build_seq node.sub
 
             when 'choice'
-                matcher = @createMatcher Any
+                matcher = @new Any
                 for branch in node.branches
                     matcher.add @build_seq branch
 
@@ -39,7 +39,7 @@ class Regex extends Any
                 raw = raw.substr 0, raw.lastIndexOf(']') + 1
                 regex = new RegExp raw
 
-                matcher = @createMatcher Charset, null, regex
+                matcher = @new Charset, [regex]
 
             else
                 throw new Error "Unable to build matcher expression for regular expression. Unable to handle AST node type #{node.type}"

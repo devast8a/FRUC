@@ -30,7 +30,7 @@ class Grammar
 
         @ParserStart = @root.name
 
-    createMatcher: (constructor, options, args...)->
+    new: (constructor, args, options)->
         new constructor this, args, options
 
     getNextId: -> @lastId++
@@ -39,7 +39,7 @@ class Grammar
         if @rules.has name
             return @rules.get name
 
-        rule = @createMatcher Rule, options, name
+        rule = @new Rule, [name], options
         @rules.set name, rule
         return rule
 
@@ -56,7 +56,7 @@ class Grammar
 
         # Handle other types
         if type == 'string'
-            return @createMatcher Constant, {parent: parent}, definition
+            return @new Constant, [definition], {parent: parent}
 
         # Handle objects
         if type != 'object'
@@ -69,6 +69,6 @@ class Grammar
             return definition.build parent
 
         if definition instanceof RegExp
-            return @createMatcher Regex, {parent: parent}, definition
+            return @new Regex, [definition], {parent: parent}
 
         throw new Error "Unable to convert input with constructor #{definition.constructor.name} to a matcher"

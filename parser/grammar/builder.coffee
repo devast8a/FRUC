@@ -5,4 +5,4 @@ class Builder
 
     build: (parent)->
         @options.parent = parent
-        parent.grammar.createMatcher @matcher, @options, @args...
+        parent.grammar.new @matcher, @args, @options

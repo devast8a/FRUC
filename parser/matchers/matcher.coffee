@@ -66,23 +66,25 @@ class Matcher
         @options[name] = value
         @invalidateChildren()
 
-    createMatcher: (constructor, options, args...)->
-        options ?= {}
-        options.parent = this
-        new constructor @grammar, args, options
-
     new: (constructor, args, options)->
         options ?= {}
         options.parent = this
         new constructor @grammar, args, options
 
-    definitionToMatcher: (definition)->
+    _definitionToMatcher: (definition)->
         @grammar.definitionToMatcher this, definition
+
+    definitionToMatcher: (definition)->
+        if definition instanceof Array
+            rule = @grammar.rule(":"+@grammar.lastId)
+            rule.add definition
+            return rule
+        return @_definitionToMatcher definition
 
     definitionToMatchers: (definition)->
         if definition instanceof Array
-            return (@definitionToMatcher d for d in definition)
-        return [@definitionToMatcher definition]
+            return (@_definitionToMatcher d for d in definition)
+        return [@_definitionToMatcher definition]
 
     matcherToSymbol: (matcher)->
         matcher.name

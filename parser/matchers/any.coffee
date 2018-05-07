@@ -21,7 +21,7 @@ class Any extends Matcher
         if options? and options.ignore
             @ignoreOutput = options.ignore
 
-        matcher = @createMatcher Definition, options, definition
+        matcher = @new Definition, [definition], options
         @definitions.push matcher
         return matcher
 
