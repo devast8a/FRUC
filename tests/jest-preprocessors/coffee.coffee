@@ -5,4 +5,5 @@ exports.process = (src, path)->
         return coffee.compile src,
             bare: true
             inlineMap: true
+            filename: path
     return src
