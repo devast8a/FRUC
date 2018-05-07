@@ -31,7 +31,7 @@ class Grammar
         @ParserStart = @root.name
 
     createMatcher: (constructor, options, args...)->
-        new constructor this, options, args
+        new constructor this, args, options
 
     getNextId: -> @lastId++
 

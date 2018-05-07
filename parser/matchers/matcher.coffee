@@ -16,7 +16,7 @@ class Matcher
     hasFlag: (flag)->
         (@constructor.flags & flag) > 0
 
-    constructor: (@grammar, @options, args)->
+    constructor: (@grammar, args, @options)->
         @options ?= {}
         @parent = @options.parent ? null
 
@@ -33,7 +33,14 @@ class Matcher
             @name = @id.toString()
 
         @grammar.matchers.push this
-        @init args...
+
+        if args?
+            @init args...
+        else
+            @init()
+
+    noBetween: false
+    optional: false
 
     init: ->
 
@@ -62,41 +69,18 @@ class Matcher
     createMatcher: (constructor, options, args...)->
         options ?= {}
         options.parent = this
-        @grammar.createMatcher constructor, options, args...
+        new constructor @grammar, args, options
+
+    new: (constructor, args, options)->
+        options ?= {}
+        options.parent = this
+        new constructor @grammar, args, options
 
     definitionToMatcher: (definition)->
         @grammar.definitionToMatcher this, definition
 
     definitionToMatchers: (definition)->
         if definition instanceof Array
-            if @getOption('between') != null
-                # Contiguous optionals that are at the
-                #   beginning of definition are assigned FRONT
-                #   end of definition are assigned BACK
-                # All others are assigned MIDDLE
-                last = definition.length - 1
-
-                front = 0
-                d = definition[front]
-                while d instanceof Builder and d.optional
-                    d.args.push 0x01 # FRONT
-
-                    if front == last
-                        console.log definition
-                        throw new Error "All values in definition can not be optional"
-
-                    d = definition[++front]
-
-                back = definition.length - 1
-                d = definition[back]
-                while d instanceof Builder and d.optional
-                    d.args.push 0x02 # BACK
-                    d = definition[--back]
-
-                for d in definition[front...back]
-                    if d instanceof Builder and d.optional
-                        d.args.push 0x03 # MIDDLE
-
             return (@definitionToMatcher d for d in definition)
         return [@definitionToMatcher definition]
 
