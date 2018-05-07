@@ -123,5 +123,3 @@ class Matcher
 
     getNodes: -> throw new Error "#{@constructor.name} must implement #{@constructor.name}::getNodes"
     generate: -> throw new Error "#{@constructor.name} must implement #{@constructor.name}::generate"
-
-Matcher.Empty = {'special': 'none'}
