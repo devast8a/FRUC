@@ -18,7 +18,7 @@ beforeEach ->
 
     return
 
-describe 'any.remove', ->
+describe 'Any.remove', ->
     it 'returns true if definition exists in any', ->
         any = new Any grammar
         matcher = any.add [req]
@@ -34,7 +34,7 @@ describe 'any.remove', ->
         expect(any.remove matcher).to.equal(false)
         return
 
-describe 'any.optional', ->
+describe 'Any.optional', ->
     it 'is true if at least one definition is optional', ->
         any = new Any grammar
 

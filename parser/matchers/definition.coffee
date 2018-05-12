@@ -146,3 +146,5 @@ class Definition extends Matcher
             "(#{@parent}: empty)"
         else
             "(#{@parent}: #{@matchers.join(" ")})"
+
+Definition.Optional = Optional
