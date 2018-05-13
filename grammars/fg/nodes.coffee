@@ -1,4 +1,4 @@
-{Node} = require 'parser/ast'
+{Node, Value} = require 'parser/ast'
 
 Node::getByType = (type)->
     output = []
@@ -6,6 +6,20 @@ Node::getByType = (type)->
         if child instanceof type
             output.push child
     return output
+
+_join = (list, output)->
+    for element in list.childNodes
+        if typeof(element.data) == 'string' and element instanceof Value
+            output.push element.data
+        else
+            _join element, output
+    return
+
+Node.join = (list, glue)->
+    output = []
+    _join list, output
+    return output.join glue
+
 
 exports.Rule =
 class Rule extends Node
@@ -84,15 +98,18 @@ class Regex extends Node
 exports.Reference =
 class Reference extends Node
     init: (@global, identifiers)->
+        @grammar = @global.data == '@'
         @identifiers = identifiers.childNodes
+        @name = Node.join identifiers, '.'
+
     outputJS: (output)->
-        if @global.data == '@'
+        if @grammar
             output.push ["grammar."]
             output.join @identifiers, "."
         else
-            output.push ["R('"]
-            output.join @identifiers, "').rule('"
-            output.push ["')"]
+            #console.log "#{@name} == #{@target}"
+
+            output.push ["R('", @target.replace(/\./g, "').rule('"), "')"]
 
 exports.Definition =
 class Definition extends Node
@@ -159,6 +176,10 @@ class Document extends Node
         @rules = statements.getByType Rule
 
     outputJS: (output)->
+        resolver = new NameResolver
+        resolver.process @rules
+        resolver.resolve()
+
         output.require_path ?= "fruc/"
         output.node_path ?= "./nodes"
 
@@ -206,3 +227,70 @@ class Document extends Node
             });
         """]
 
+class Scope
+    constructor: (@parent = null, @name = "")->
+        @declared = {}
+
+        if @parent?
+            if @parent.name != ''
+                @name = @parent.name + '.' + @name
+
+    declare: (name, node)->
+        @declared[name] = node
+
+    lookup: (name)->
+        if @declared[name]?
+            return @declared[name]
+        else if @parent?
+            return @parent.lookup name
+        else
+            return null
+
+class NameResolver
+    process: (rules)->
+        scope = new Scope
+        @references = []
+        @_process scope, rules
+
+    _process: (scope, nodes)->
+        if scope.name == ''
+            prefix = ''
+        else
+            prefix = scope.name + '.'
+
+        for node in nodes
+            if node instanceof Rule
+                scope.declare node.name.name, {
+                    name: node.name.name
+                    scope: scope
+                    full: prefix + node.name.name
+                }
+                @_process scope, [node.name]
+
+                for other in node.others
+                    scope.declare other.name, {
+                        name: other.name
+                        scope: scope
+                        full: prefix + other.name
+                    }
+                    @_process scope, [other]
+
+                childScope = new Scope scope, node.name.name
+                @_process childScope, node.definition.childNodes
+                @_process childScope, node.subrules
+            else if node instanceof Reference
+                if not node.grammar
+                    @reference scope, node.name, node
+            else
+                @_process scope, node.childNodes
+
+    resolve: ->
+        for [scope, name, node] in @references
+            symbol = scope.lookup name
+            if symbol?
+                node.target = symbol.full
+            else
+                throw new Error "Failed to lookup #{name}"
+
+    reference: (scope, name, node)->
+        @references.push [scope, name, node]
