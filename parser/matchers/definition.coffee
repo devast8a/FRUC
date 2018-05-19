@@ -7,7 +7,7 @@ class Symbols
         @name = @options.parent.name
 
     postprocess: (data, location, reject)->
-        [@parent, data, location]
+        @parent.postprocess data, location, reject
 
 class Empty extends Symbols
 
@@ -43,8 +43,14 @@ class Optional extends Any
         super()
         rule = @rule.name
         between = between?.name
+        direction = @direction
 
-        switch @direction
+        @ignoreOutput = @rule.ignoreOutput
+
+        if @rule.noBetween == true
+            direction = Optional.NONE
+
+        switch direction
             when Optional.FRONT
                 @match = @add [rule, between]
                 @empty = @add []
@@ -78,6 +84,9 @@ class Definition extends Matcher
         @name = @parent.name
 
     init: (@definition)->
+        if @options?.preprocess?
+            @postprocess = @options.preprocess
+
         @containers = []
 
         if @definition == Matcher.Empty

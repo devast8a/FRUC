@@ -5,8 +5,10 @@ module.exports =
 class Optional extends Any
     optional: true
 
-    init: (rule)->
+    init: (@rule)->
         super()
-        @add rule
+        rule = @add @rule
+        @noBetween = @rule.noBetween
+        @ignoreOutput = @rule.ignoreOutput
 
     toString: -> "Optional(#{@rule})"
