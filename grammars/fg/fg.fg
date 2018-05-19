@@ -70,12 +70,12 @@ repetition = atom '**' atom :: OptRep
 
 WS = WS_+
     WS_ = /[ \t\n]/
-    WS_ = /#[^\n]+\n/
+    WS_ = /#[^\n]*\n/
     ignore: @true
 
 NEWLINE = NEWLINE_? '\n' WS?
     NEWLINE_ = /[ \t]+/
-    NEWLINE_ = /[ \t]*#[^\n]+/
+    NEWLINE_ = /[ \t]*#[^\n]*/
     ignore: @true
 
 INDENT = WS? %INDENT

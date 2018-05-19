@@ -15,7 +15,7 @@ _join = (list, output)->
             _join element, output
     return
 
-Node.join = (list, glue)->
+Node.join = (list, glue = '')->
     output = []
     _join list, output
     return output.join glue
@@ -88,7 +88,12 @@ class Token extends Node
 exports.String =
 class String extends Node
     init: (@string)->
-    outputJS: (output)->output.push ['\'', @string, '\'']
+    outputJS: (output)->
+        if @string.data?
+            quote = @metadata[0].nodes[0][1][0][1][0]
+            output.push [quote, @string, quote]
+        else
+            output.push ['\'\'']
 
 exports.Regex =
 class Regex extends Node
@@ -188,6 +193,7 @@ class Document extends Node
             var {Rep, Opt, OptRep, Token, importSpace} = require("#{output.require_path}parser/grammar/helpers")
             var grammar = new Grammar()
             module.exports = grammar
+            var tags = require('#{output.node_path}')
             grammar.define(function(){
                 function R(rule){
                     return grammar.rule(rule)
@@ -198,8 +204,7 @@ class Document extends Node
                 grammar.SPACE_NL = SPACE_NL
                 grammar.NEWLINE = NEWLINE
 
-                var tags = require('#{output.node_path}')
-
+                grammar.tags = tags
                 grammar.null = null
                 grammar.true = true
                 grammar.false = false
@@ -225,13 +230,18 @@ class Document extends Node
                     grammar.between.add('')
                 }
             });
+            if(tags.onGrammarDefined !== undefined){
+                tags.onGrammarDefined(grammar)
+            }
         """]
 
 class Scope
     constructor: (@parent = null, @name = "")->
         @declared = {}
+        @children = {}
 
         if @parent?
+            @parent.children[@name] = this
             if @parent.name != ''
                 @name = @parent.name + '.' + @name
 
@@ -260,11 +270,12 @@ class NameResolver
 
         for node in nodes
             if node instanceof Rule
-                scope.declare node.name.name, {
+                self = {
                     name: node.name.name
                     scope: scope
                     full: prefix + node.name.name
                 }
+                scope.declare node.name.name, self
                 @_process scope, [node.name]
 
                 for other in node.others
@@ -276,6 +287,7 @@ class NameResolver
                     @_process scope, [other]
 
                 childScope = new Scope scope, node.name.name
+                self.childScope = childScope
                 @_process childScope, node.definition.childNodes
                 @_process childScope, node.subrules
             else if node instanceof Reference
@@ -286,11 +298,12 @@ class NameResolver
 
     resolve: ->
         for [scope, name, node] in @references
-            symbol = scope.lookup name
-            if symbol?
-                node.target = symbol.full
-            else
-                throw new Error "Failed to lookup #{name}"
+            for part in name.split '.'
+                symbol = scope.lookup part
+                if symbol == null
+                    throw new Error "Unable to lookup symbol #{name}"
+                scope = symbol.childScope
+            node.target = symbol.full
 
     reference: (scope, name, node)->
         @references.push [scope, name, node]
