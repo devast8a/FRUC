@@ -7,7 +7,7 @@ path = require 'path'
 exports.compile = (options)->
     # Grammar to load
     if typeof(options.with) == 'string'
-        grammar = require "../grammars/#{options.with}"
+        grammar = require "../langs/#{options.with}"
     else if options.with.exports instanceof Grammar
         grammar = options.with.exports
     else if options.with instanceof Grammar
