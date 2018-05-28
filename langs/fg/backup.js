@@ -2,6 +2,7 @@ var Grammar = require("../../parser/grammar")
 var {Rep, Opt, OptRep, Token, importSpace} = require("../../parser/grammar/helpers")
 var grammar = new Grammar()
 module.exports = grammar
+var tags = require('./nodes')
 grammar.define(function(){
     function R(rule){
         return grammar.rule(rule)
@@ -12,8 +13,7 @@ grammar.define(function(){
     grammar.SPACE_NL = SPACE_NL
     grammar.NEWLINE = NEWLINE
 
-    var tags = require('./nodes')
-
+    grammar.tags = tags
     grammar.null = null
     grammar.true = true
     grammar.false = false
@@ -25,15 +25,15 @@ grammar.define(function(){
     })
     R('statements').add([Rep(R('statement'), {separator: R('NEWLINE')})])
     R('statement').add([R('rule')])
-    R('rule').add([Rep(R('reference'), {separator: grammar.SPACE}), '=', R('definition'), Opt(R('tag')), Opt(R('rule_body'))], {
+    R('rule').add([Rep(R('reference'), {separator: grammar.SPACE}), '=', R('definition'), Opt(R('rule').rule('tag')), Opt(R('rule').rule('rule_body'))], {
         process: tags.Rule
     })
         // Subrules
-        R('rule_body').add([R('INDENT'), R('statements'), R('DEDENT')])
-        R('rule_body').add([R('processor')], {
+        R('rule').rule('rule_body').add([R('INDENT'), R('statements'), R('DEDENT')])
+        R('rule').rule('rule_body').add([R('processor')], {
             process: tags.Processor
         })
-        R('tag').add(['::', R('reference')])
+        R('rule').rule('tag').add(['::', R('reference')])
     
     R('statement').add([R('option')])
     R('option').add([R('identifier'), ':', R('atom')], {
@@ -42,14 +42,14 @@ grammar.define(function(){
     R('statement').add([R('processor')], {
         process: tags.Processor
     })
-    R('processor').add([Opt(R('parameters')), '->', grammar.NO_SPACE, R('processor_body')])
+    R('processor').add([Opt(R('processor').rule('parameters')), '->', grammar.NO_SPACE, R('processor').rule('processor_body')])
         // Subrules
-        R('parameters').add(['(', Rep(R('parameter'), {separator: ','}), ')'])
-        R('parameter').add([R('identifier')])
-        R('processor_body').add([/[^\n]+/])
-        R('processor_body').add([R('INDENT'), Rep(R('line')), R('DEDENT')])
+        R('processor').rule('parameters').add(['(', Rep(R('processor').rule('parameter'), {separator: ','}), ')'])
+        R('processor').rule('parameter').add([R('identifier')])
+        R('processor').rule('processor_body').add([/[^\n]+/])
+        R('processor').rule('processor_body').add([R('INDENT'), Rep(R('processor').rule('processor_body').rule('line')), R('DEDENT')])
             // Subrules
-            R('line').add([/[^\n]+\n/])
+            R('processor').rule('processor_body').rule('line').add([/[^\n]+\n/])
     R('definition').add([Rep(R('matcher'), {separator: grammar.SPACE})], {
         process: tags.Definition
     })
@@ -102,19 +102,19 @@ grammar.define(function(){
         process: tags.OptRep
     })
     grammar.between.add([Opt(grammar.SPACE)])
-    R('WS').add([Rep(R('WS_'))], {
+    R('WS').add([Rep(R('WS').rule('WS_'))], {
         ignore: grammar.true
     })
         // Subrules
-        R('WS_').add([/[ \t\n]/])
-        R('WS_').add([/#[^\n]+\n/])
+        R('WS').rule('WS_').add([/[ \t\n]/])
+        R('WS').rule('WS_').add([/#[^\n]*\n/])
     
-    R('NEWLINE').add([Opt(R('NEWLINE_')), '\n', Opt(R('WS'))], {
+    R('NEWLINE').add([Opt(R('NEWLINE').rule('NEWLINE_')), '\n', Opt(R('WS'))], {
         ignore: grammar.true
     })
         // Subrules
-        R('NEWLINE_').add([/[ \t]+/])
-        R('NEWLINE_').add([/[ \t]*#[^\n]+/])
+        R('NEWLINE').rule('NEWLINE_').add([/[ \t]+/])
+        R('NEWLINE').rule('NEWLINE_').add([/[ \t]*#[^\n]*/])
     
     R('INDENT').add([Opt(R('WS')), Token("INDENT")], {
         ignore: grammar.true
@@ -127,3 +127,6 @@ grammar.define(function(){
         grammar.between.add('')
     }
 });
+if(tags.onGrammarDefined !== undefined){
+    tags.onGrammarDefined(grammar)
+}
