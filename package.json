@@ -4,7 +4,7 @@
   "description": "Compiler and transpiler on steroids",
   "main": "index.js",
   "dependencies": {
-    "nearley": "^2.11.1",
+    "nearley": "^2.13.0",
     "regulex": "0.0.2"
   },
   "devDependencies": {
