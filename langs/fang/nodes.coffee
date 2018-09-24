@@ -3,7 +3,7 @@
 exports.Function =
 class Function extends Node
     init: (name, parameters, body)->
-        @name = name.value
+        @name = name
         @parameters = parameters.childNodes
         @body = body.childNodes[1]?.childNodes ? []
 
@@ -56,3 +56,11 @@ class IfElif extends Node
     init: (condition, body)->
         @condition = condition
         @body = body.childNodes[1]?.childNodes ? []
+
+exports.VariableDefinition =
+class VariableDefinition extends Node
+    init: (@name, @type)->
+
+exports.FunctionParameter =
+class FunctionParameter extends Node
+    init: (@name, @type)->

@@ -23,6 +23,11 @@ grammar.define(function(){
     R('document').add([Opt(R('WS')), Rep(R('statement')), Opt(R('WS'))], {
         process: tags.Document
     })
+    R('block').add([R('block').rule('start'), Rep(R('statement')), R('block').rule('end')])
+        // Subrules
+        R('block').rule('start').add([R('INDENT')])
+        R('block').rule('end').add([R('DEDENT')])
+    
     R('function_definition').add(['def', R('function_definition').rule('name'), Opt(R('function_definition').rule('parameters')), '->', Opt(R('function_definition').rule('body'))], {
         process: tags.Function
     })
@@ -33,8 +38,12 @@ grammar.define(function(){
         R('function_definition').rule('body').add([R('block')])
         R('function_definition').rule('name').add([R('identifier')])
         R('function_definition').rule('parameters').add(['(', OptRep(R('function_definition').rule('parameter'), {separator: ','}), ')'])
-        R('function_definition').rule('parameter').add([R('identifier')])
-    
+        R('function_definition').rule('parameter').add([R('function_definition').rule('parameter').rule('name'), ':', R('function_definition').rule('parameter').rule('type')], {
+            process: tags.FunctionParameter
+        })
+            // Subrules
+            R('function_definition').rule('parameter').rule('name').add([R('identifier')])
+            R('function_definition').rule('parameter').rule('type').add([R('identifier')])
     R('assignment').add([R('assignment').rule('assignable'), '=', R('expression')], {
         process: tags.Assignment
     })
@@ -44,31 +53,6 @@ grammar.define(function(){
         // Subrules
         R('assignment').rule('assignable').add([R('identifier')])
     
-    R('integer').add([/[0-9]+/], {
-        process: tags.IntegerDecimal
-    })
-        // Linked
-        R('expression').add([R('integer')])
-        
-    
-    R('string').add([R('string').rule('string_')])
-        // Linked
-        R('expression').add([R('string')])
-        
-        // Subrules
-        R('string').rule('single_quote').add([/'[^'\r\n]+'/], {
-            process: tags.StringSimple
-        })
-            // Linked
-            R('string').rule('string_').add([R('string').rule('single_quote')])
-            
-        
-        R('string').rule('double_quote').add([/"[^"\r\n]+"/], {
-            process: tags.StringSimple
-        })
-            // Linked
-            R('string').rule('string_').add([R('string').rule('double_quote')])
-            
     R('function_call').add([R('function_call').rule('callable'), R('function_call').rule('arguments')], {
         process: tags.Call
     })
@@ -81,17 +65,13 @@ grammar.define(function(){
         R('function_call').rule('arguments').add(['(', OptRep(R('function_call').rule('argument'), {separator: ','}), ')'])
         R('function_call').rule('argument').add([R('expression')])
     
-    R('identifier').add([/[a-zA-Z_][a-zA-Z_0-9]*/], {
-        process: tags.Identifier
+    R('statement').add([R('variable_definition')])
+    R('variable_definition').add(['var', R('variable_definition').rule('name'), ':', R('variable_definition').rule('type')], {
+        process: tags.VariableDefinition
     })
-        // Linked
-        R('expression').add([R('identifier')])
-        
-    
-    R('block').add([R('block').rule('start'), Rep(R('statement')), R('block').rule('end')])
         // Subrules
-        R('block').rule('start').add([R('INDENT')])
-        R('block').rule('end').add([R('DEDENT')])
+        R('variable_definition').rule('name').add([R('identifier')])
+        R('variable_definition').rule('type').add([R('identifier')])
     
     R('while').add(['while', R('while').rule('condition'), Opt(R('while').rule('body'))], {
         process: tags.While
@@ -124,6 +104,38 @@ grammar.define(function(){
     R('if_else').add(['else', Opt(R('if_else').rule('body'))])
         // Subrules
         R('if_else').rule('body').add([R('block')])
+    
+    R('integer').add([/[0-9]+/], {
+        process: tags.IntegerDecimal
+    })
+        // Linked
+        R('expression').add([R('integer')])
+        
+    
+    R('string').add([R('string').rule('string_')])
+        // Linked
+        R('expression').add([R('string')])
+        
+        // Subrules
+        R('string').rule('single_quote').add([/'[^'\r\n]+'/], {
+            process: tags.StringSimple
+        })
+            // Linked
+            R('string').rule('string_').add([R('string').rule('single_quote')])
+            
+        
+        R('string').rule('double_quote').add([/"[^"\r\n]+"/], {
+            process: tags.StringSimple
+        })
+            // Linked
+            R('string').rule('string_').add([R('string').rule('double_quote')])
+            
+    R('identifier').add([/[a-zA-Z_][a-zA-Z_0-9]*/], {
+        process: tags.Identifier
+    })
+        // Linked
+        R('expression').add([R('identifier')])
+        
     
     grammar.root.add([R('document')])
     grammar.between.add([Opt(R('WS'))])

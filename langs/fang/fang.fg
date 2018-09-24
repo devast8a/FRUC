@@ -3,34 +3,38 @@ name: 'FANG'
 author: 'devast8a'
 
 ################################################################################
-
 document = WS? statement+ WS? :: Document
 
+block = start statement+ end
+    start = INDENT
+    end = DEDENT
+
+################################################################################
 statement function_definition = 'def' name parameters? '->' body? :: Function
     body = block
     name = identifier
     parameters = '(' parameter**',' ')'
-    parameter = identifier
+
+    parameter = name ':' type :: FunctionParameter
+        name = identifier
+        type = identifier
 
 statement assignment = assignable '=' expression :: Assignment
     assignable = identifier
-
-expression integer = /[0-9]+/ :: IntegerDecimal
-
-expression string = string_
-    string_ single_quote = /'[^'\r\n]+'/ :: StringSimple
-    string_ double_quote = /"[^"\r\n]+"/ :: StringSimple
 
 statement expression function_call = callable arguments :: Call
     callable = identifier
     arguments = '(' argument**',' ')'
     argument = expression
 
-expression identifier = /[a-zA-Z_][a-zA-Z_0-9]*/ :: Identifier
 
-block = start statement+ end
-    start = INDENT
-    end = DEDENT
+
+statement = variable_definition
+variable_definition = 'var' name ':' type :: VariableDefinition
+    name = identifier
+    type = identifier
+
+
 
 statement while = 'while' condition body? :: While
     condition = expression
@@ -47,6 +51,16 @@ if_elif = keyword condition body? :: IfElif
 
 if_else = 'else' body?
     body = block
+
+################################################################################
+
+expression integer = /[0-9]+/ :: IntegerDecimal
+
+expression string = string_
+    string_ single_quote = /'[^'\r\n]+'/ :: StringSimple
+    string_ double_quote = /"[^"\r\n]+"/ :: StringSimple
+
+expression identifier = /[a-zA-Z_][a-zA-Z_0-9]*/ :: Identifier
 
 ################################################################################
 

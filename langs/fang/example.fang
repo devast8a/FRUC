@@ -1,11 +1,8 @@
-def fn ->
-    while true
-        print("things")
+var foo: A
+var bar: B
 
-    if true
-        print("thunks")
-        print("not thunks")
-    elif false
-        print("elif")
-    else
-        print(":think:")
+def fnA(param: A)->
+def fnB(param: B)->
+
+fnA(foo)
+fnB(bar)
