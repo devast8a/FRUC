@@ -1,0 +1,11 @@
+def fn ->
+    while true
+        print("things")
+
+    if true
+        print("thunks")
+        print("not thunks")
+    elif false
+        print("elif")
+    else
+        print(":think:")

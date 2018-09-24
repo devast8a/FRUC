@@ -1,0 +1,64 @@
+# Metadata
+name: 'FANG'
+author: 'devast8a'
+
+################################################################################
+
+document = WS? statement+ WS? :: Document
+
+statement function_definition = 'def' name parameters? '->' body? :: Function
+    body = block
+    name = identifier
+    parameters = '(' parameter**',' ')'
+    parameter = identifier
+
+statement assignment = assignable '=' expression :: Assignment
+    assignable = identifier
+
+expression integer = /[0-9]+/ :: IntegerDecimal
+
+expression string = string_
+    string_ single_quote = /'[^'\r\n]+'/ :: StringSimple
+    string_ double_quote = /"[^"\r\n]+"/ :: StringSimple
+
+statement expression function_call = callable arguments :: Call
+    callable = identifier
+    arguments = '(' argument**',' ')'
+    argument = expression
+
+expression identifier = /[a-zA-Z_][a-zA-Z_0-9]*/ :: Identifier
+
+block = start statement+ end
+    start = INDENT
+    end = DEDENT
+
+statement while = 'while' condition body? :: While
+    condition = expression
+    body = block
+
+statement if = 'if' condition body? if_elif* if_else? :: If
+    condition = expression
+    body = block
+
+if_elif = keyword condition body? :: IfElif
+    condition = expression
+    keyword = 'elif'
+    body = block
+
+if_else = 'else' body?
+    body = block
+
+################################################################################
+
+@root = document
+
+@between = WS?
+
+WS = /[ \t\n]+/
+    ignore: @true
+
+INDENT = %INDENT
+    ignore: @true
+
+DEDENT = %DEDENT
+    ignore: @true
