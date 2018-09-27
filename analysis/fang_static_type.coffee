@@ -19,6 +19,6 @@ staticTypeAnalysis.set nodes.Call, (node, options)->
         if argumentMetadata == undefined
             throw new Error "You are using a variable that does not exist"
 
-        if argumentMetadata.type != parameter.type.value
-            throw new Error "The types don't match"
-
+        if argumentMetadata.type != parameter.type.name.value
+            # Assume parameter.type is TypeSimple
+            throw new Error "Tried to use #{argumentMetadata.type} but expecting #{parameter.type.name.value}"

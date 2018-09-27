@@ -20,15 +20,39 @@ grammar.define(function(){
 
     grammar.name='FANG'
     grammar.author='devast8a'
-    R('document').add([Opt(R('WS')), Rep(R('statement')), Opt(R('WS'))], {
+    R('document').add([Opt(R('WS')), Rep(R('document').rule('statement_')), Opt(R('WS'))], {
         process: tags.Document
     })
-    R('block').add([R('block').rule('start'), Rep(R('statement')), R('block').rule('end')])
         // Subrules
-        R('block').rule('start').add([R('INDENT')])
-        R('block').rule('end').add([R('DEDENT')])
+        R('document').rule('statement_').add([R('statement'), ';'])
     
-    R('function_definition').add(['def', R('function_definition').rule('name'), Opt(R('function_definition').rule('parameters')), '->', Opt(R('function_definition').rule('body'))], {
+    R('type').add([R('identifier')], {
+        process: tags.TypeSimple
+    })
+    R('type').add([R('type'), '<', R('type').rule('arguments'), '>'], {
+        process: tags.TypeGeneric
+    })
+        // Subrules
+        R('type').rule('arguments').add([Rep(R('type').rule('argument'), {separator: ','})])
+        R('type').rule('argument').add([R('type')])
+    
+    R('class_definition').add(['class', R('class_definition').rule('name'), Opt(R('class_definition').rule('body'))], {
+        process: tags.ClassDefinition
+    })
+        // Linked
+        R('statement').add([R('class_definition')])
+        
+        // Subrules
+        R('class_definition').rule('name').add([R('identifier')])
+        R('class_definition').rule('body').add([R('class_definition').rule('body').rule('start'), Rep(R('class_definition').rule('body').rule('member')), R('class_definition').rule('body').rule('end')])
+            // Subrules
+            R('class_definition').rule('body').rule('start').add([R('INDENT')])
+            R('class_definition').rule('body').rule('end').add([R('DEDENT')])
+            R('class_definition').rule('body').rule('member').add([R('class_definition').rule('body').rule('field')])
+            R('class_definition').rule('body').rule('field').add([R('class_definition').rule('name'), ':', R('type')], {
+                process: tags.ClassField
+            })
+    R('function_definition').add(['def', R('function_definition').rule('name'), Opt(R('function_definition').rule('parameters')), Opt(R('function_definition').rule('returnType')), '->', Opt(R('function_definition').rule('body'))], {
         process: tags.Function
     })
         // Linked
@@ -38,12 +62,12 @@ grammar.define(function(){
         R('function_definition').rule('body').add([R('block')])
         R('function_definition').rule('name').add([R('identifier')])
         R('function_definition').rule('parameters').add(['(', OptRep(R('function_definition').rule('parameter'), {separator: ','}), ')'])
-        R('function_definition').rule('parameter').add([R('function_definition').rule('parameter').rule('name'), ':', R('function_definition').rule('parameter').rule('type')], {
+        R('function_definition').rule('returnType').add([':', R('type')])
+        R('function_definition').rule('parameter').add([R('function_definition').rule('parameter').rule('name'), ':', R('type')], {
             process: tags.FunctionParameter
         })
             // Subrules
             R('function_definition').rule('parameter').rule('name').add([R('identifier')])
-            R('function_definition').rule('parameter').rule('type').add([R('identifier')])
     R('assignment').add([R('assignment').rule('assignable'), '=', R('expression')], {
         process: tags.Assignment
     })
@@ -51,7 +75,7 @@ grammar.define(function(){
         R('statement').add([R('assignment')])
         
         // Subrules
-        R('assignment').rule('assignable').add([R('identifier')])
+        R('assignment').rule('assignable').add([R('expression')])
     
     R('function_call').add([R('function_call').rule('callable'), R('function_call').rule('arguments')], {
         process: tags.Call
@@ -66,12 +90,11 @@ grammar.define(function(){
         R('function_call').rule('argument').add([R('expression')])
     
     R('statement').add([R('variable_definition')])
-    R('variable_definition').add(['var', R('variable_definition').rule('name'), ':', R('variable_definition').rule('type')], {
+    R('variable_definition').add(['var', R('variable_definition').rule('name'), ':', R('type')], {
         process: tags.VariableDefinition
     })
         // Subrules
         R('variable_definition').rule('name').add([R('identifier')])
-        R('variable_definition').rule('type').add([R('identifier')])
     
     R('while').add(['while', R('while').rule('condition'), Opt(R('while').rule('body'))], {
         process: tags.While
@@ -136,6 +159,19 @@ grammar.define(function(){
         // Linked
         R('expression').add([R('identifier')])
         
+    
+    R('dot_index').add([R('expression'), '.', R('identifier')], {
+        process: tags.DotIndex
+    })
+        // Linked
+        R('expression').add([R('dot_index')])
+        
+    
+    R('block').add([R('block').rule('start'), Rep(R('block').rule('statement_')), R('block').rule('end')])
+        // Subrules
+        R('block').rule('start').add([R('INDENT')])
+        R('block').rule('end').add([R('DEDENT')])
+        R('block').rule('statement_').add([R('statement'), ';'])
     
     grammar.root.add([R('document')])
     grammar.between.add([Opt(R('WS'))])

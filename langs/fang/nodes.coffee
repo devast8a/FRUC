@@ -1,11 +1,14 @@
 {Node, Value} = require 'parser/ast'
+        
+elementsFromBlock = (node)->
+    node.childNodes[1]?.childNodes ? []
 
 exports.Function =
 class Function extends Node
     init: (name, parameters, body)->
         @name = name
         @parameters = parameters.childNodes
-        @body = body.childNodes[1]?.childNodes ? []
+        @body = elementsFromBlock body
 
 exports.Identifier =
 class Identifier extends Node
@@ -42,20 +45,20 @@ exports.While =
 class While extends Node
     init: (condition, body)->
         @condition = condition
-        @body = body.childNodes[1]?.childNodes ? []
+        @body = elementsFromBlock body
 
 exports.If =
 class If extends Node
     init: (condition, body, else_)->
         @condition = condition
-        @body = body.childNodes[1]?.childNodes ? []
-        @else = else_.childNodes[1]?.childNodes ? []
+        @body = elementsFromBlock body
+        @else = elementsFromBlock else_
 
 exports.IfElif =
 class IfElif extends Node
     init: (condition, body)->
         @condition = condition
-        @body = body.childNodes[1]?.childNodes ? []
+        @body = elementsFromBlock body
 
 exports.VariableDefinition =
 class VariableDefinition extends Node
@@ -64,3 +67,21 @@ class VariableDefinition extends Node
 exports.FunctionParameter =
 class FunctionParameter extends Node
     init: (@name, @type)->
+
+exports.ClassDefinition =
+class ClassDefinition extends Node
+    init: (@name, body)->
+        @body = elementsFromBlock body
+
+exports.ClassField =
+class ClassField extends Node
+    init: (@name, @type)->
+
+exports.TypeSimple =
+class TypeSimple extends Node
+    init: (@name)->
+
+exports.TypeGeneric =
+class TypeGeneric extends Node
+    init: (@type, args)->
+        @args = args.childNodes
