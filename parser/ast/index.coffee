@@ -7,6 +7,12 @@ Node.prototype.__automatic = (definition, data, nodes)->
 
     stripped = []
 
+    @childNodes = []
+    for i in [0...nodes.length]
+        if data[i][0].ignoreOutput or data[i][0].parent?.ignoreOutput
+            continue
+        @childNodes.push nodes[i]
+
     for node, i in nodes
         if data[i][0].parent.label != '.between'
             stripped.push nodes[i]
