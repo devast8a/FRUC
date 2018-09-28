@@ -1,5 +1,5 @@
 Any = require './any'
-{Node, Value} = require '../ast'
+{Node, Value, List} = require '../ast'
 
 repeat = (data)->
     data[0].data.concat data[1]
@@ -29,20 +29,22 @@ class Repeat extends Any
             if separator
                 @tail = @add @rule,
                     ([data])->
-                        new Node data
+                        # TODO: Actually call Node correctly
+                        new List [data]
 
                 @repeat = @add [this, separator, @rule],
                     ([list, data])->
                         list.metadata = []
-                        list.childNodes.push data
+                        list.data.push data
                         return list
             else
                 @tail = @add @rule,
                     ([data])->
-                        new Node data
+                        # TODO: Actually call Node correctly
+                        new List [data]
 
                 @repeat = @add [this, @rule],
                     ([list, data])->
                         list.metadata = []
-                        list.childNodes.push data
+                        list.data.push data
                         return list

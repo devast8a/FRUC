@@ -21,6 +21,17 @@ Node.join = (list, glue = '')->
     return output.join glue
 
 
+process_definition = (definition)->
+    output = []
+
+    for matcher in definition.matchers
+        if matcher instanceof Reference
+            output.push(matcher.name)
+        else
+            output.push(null)
+
+    return JSON.stringify output
+
 exports.Rule =
 class Rule extends Node
     init: (name, @definition, @tag, body)->
@@ -39,7 +50,11 @@ class Rule extends Node
 
         if @tag instanceof Reference
             value = (node.identifier.data for node in @tag.identifiers).join '.'
-            @options.push ['process: tags.', value]
+            @options.push ['process: T(\'', value, '\')']
+        else if @name.grammar == false
+            @options.push ['process: T(\'', @name.identifiers, '\')']
+            @options.push ['automatic_process: true']
+            @options.push ['definition_names: ', process_definition(@definition)]
 
         if @processors.length > 1
             throw new Error "Only allowed one processor"
@@ -173,18 +188,19 @@ exports.Opt = Repeat 'Opt'
 exports.Rep = Repeat 'Rep'
 exports.OptRep = Repeat 'OptRep'
 
+{displayAstNodes} = require 'analysis/ast_util'
+
 exports.Document =
 class Document extends Node
     init: (_, statements)->
         @processors = statements.getByType Processor
         @options = statements.getByType Option
         @rules = statements.getByType Rule
-
-    outputJS: (output)->
         resolver = new NameResolver
         resolver.process @rules
         resolver.resolve()
 
+    outputJS: (output)->
         output.require_path ?= "fruc/"
         output.node_path ?= "./nodes"
 
@@ -193,10 +209,23 @@ class Document extends Node
             var {Rep, Opt, OptRep, Token, importSpace} = require("#{output.require_path}parser/grammar/helpers")
             var grammar = new Grammar()
             module.exports = grammar
-            var tags = require('#{output.node_path}')
+            var tags = require('#{output.node_path}');
+            var Node = require("#{output.require_path}parser/ast").Node
             grammar.define(function(){
                 function R(rule){
                     return grammar.rule(rule)
+                }
+                function T(tag){
+                    if(tags[tag] === undefined){
+                        class AutomaticallyGeneratedNode extends Node {
+                            __process(definition, data, nodes){
+                                this.__automatic(definition, data, nodes);
+                            }
+                        }
+                        Object.defineProperty(AutomaticallyGeneratedNode, "name", { value: tag });
+                        tags[tag] = AutomaticallyGeneratedNode;
+                    }
+                    return tags[tag];
                 }
                 var {SPACE, NO_SPACE, SPACE_NL, NEWLINE} = importSpace(grammar)
                 grammar.SPACE = SPACE
@@ -293,7 +322,7 @@ class NameResolver
             else if node instanceof Reference
                 if not node.grammar
                     @reference scope, node.name, node
-            else
+            else if node.childNodes?
                 @_process scope, node.childNodes
 
     resolve: ->
