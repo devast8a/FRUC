@@ -4,5 +4,6 @@ module.exports =
 class Value extends Node
     constructor: (@data)->
         super()
+        @childNodes = []
 
     __process: ->
