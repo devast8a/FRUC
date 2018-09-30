@@ -1,3 +1,4 @@
+{LoadLocal, StoreLocal, BranchFalse, BranchTrue, Call, Jump} = require '../../compiler/fir/stack/instructions'
 {Node, Value} = require 'parser/ast'
         
 elementsFromBlock = (node)->
@@ -16,14 +17,32 @@ class Identifier extends Node
         [first, remaining] = regex.childNodes
         @value = first.data + (remaining.data ? "")
 
+    defineStackSemantics: (fn, options)->
+        # We are assuming execution as an expression
+        # ie. We push the value of local onto stack
+        md = options.metadata.get @value
+        fn.addInstruction this, LoadLocal, md.local
+
 exports.Document =
 class Document extends Node
     init: (_, body)->
         @statements = body.childNodes
 
+    defineStackSemantics: (fn, options)->
+        for statement in @statements
+            fn.addNode this, statement, options
+
 exports.Assignment =
 class Assignment extends Node
     init: (@destination, @source)->
+
+    defineStackSemantics: (fn, options)->
+        # TODO: Setup defineStackSemantics to signal to other nodes that we want to store a value.
+        md = options.metadata.get @destination.value
+
+        fn.addNode this, @source, options
+
+        fn.addInstruction this, StoreLocal, md.local
 
 exports.IntegerDecimal =
 class IntegerDecimal extends Node
@@ -35,11 +54,18 @@ class StringSimple extends Node
     init: (regex)->
         @value = regex.data
 
-exports.Call =
-class Call extends Node
+exports.CallExpression =
+class CallExpression extends Node
     init: (callable, args)->
         @callable = callable
         @arguments = args.childNodes
+
+    defineStackSemantics: (fn, options)->
+        for argument in @arguments
+            fn.addNode this, argument, options
+
+        # TODO: Actually calculate number of return values
+        fn.addInstruction this, Call, @callable.value, @arguments.length, 1
 
 exports.While =
 class While extends Node
@@ -49,10 +75,26 @@ class While extends Node
 
 exports.If =
 class If extends Node
-    init: (condition, body, else_)->
+    init: (condition, body, _, else_)->
         @condition = condition
         @body = elementsFromBlock body
         @else = elementsFromBlock else_
+
+    defineStackSemantics: (fn, options)->
+        end = fn.addLabel 'end'
+        falseBranch = fn.addLabel 'falseBranch'
+
+        fn.addNode this, @condition, options
+        fn.addInstruction this, BranchFalse, falseBranch
+        for node in @body
+            fn.addNode this, node, options
+        fn.addInstruction this, Jump, end
+
+        fn.mark this, falseBranch
+        for node in @else
+            fn.addNode this, node, options
+        
+        fn.mark this, end
 
 exports.IfElif =
 class IfElif extends Node
@@ -63,6 +105,10 @@ class IfElif extends Node
 exports.VariableDefinition =
 class VariableDefinition extends Node
     init: (@name, @type)->
+
+    defineStackSemantics: (fn, options)->
+        md = options.metadata.get @name.value
+        md.local = fn.addLocal @type.name.value, @name.value
 
 exports.FunctionParameter =
 class FunctionParameter extends Node

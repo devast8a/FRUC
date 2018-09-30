@@ -41,7 +41,7 @@ statement function_definition = 'def' name parameters? returnType? '->' body? ::
 statement assignment = assignable '=' expression :: Assignment
     assignable = expression
 
-statement expression function_call = callable arguments :: Call
+statement expression function_call = callable arguments :: CallExpression
     callable = identifier
     arguments = '(' argument**',' ')'
     argument = expression
