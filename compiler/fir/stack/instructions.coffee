@@ -66,24 +66,28 @@ class Pop extends FirStackInstruction
 
 ################################################################################
 
-# Call <Fn> <Return Count> <Argument Count>
-#   Pop <Argument Count> arguments off of stack
+# Call <Fn> <Returns> <Argument Count>
+#   If returns == true,
+#       pushes one value
+#   Otherwise
+#       pushes no values
 #   Call Fn (using those variables)
 #   Push <Return Count> return values onto stack
 exports.Call =
 class Call extends FirStackInstruction
-    constructor: (@function, @returnCount, @argumentCount)->
+    constructor: (@function, @returns, @argumentCount)->
         super()
-        if @returnCount < 0
-            throw new Error "Call: returnCount must zero or greater"
+
+        if @returns
+            @push = 1
+        else
+            @push = 0
 
         if @argumentCount < 0
             throw new Error "Call: argumentCount must zero or greater"
-
-        @push = @returnCount
         @pop = @argumentCount
 
-    toText: -> "Call #{@function} #{@returnCount} #{@argumentCount}"
+    toText: -> "Call #{@function} #{@returns} #{@argumentCount}"
 
 # Return <Return Count>
 #   End function, returning <Return Count> return values
