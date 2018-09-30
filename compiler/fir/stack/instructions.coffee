@@ -1,5 +1,7 @@
 exports.FirStackInstruction =
 class FirStackInstruction
+    toText: ->
+        "[#{this.constructor.name}]"
 
 # Load <Local>
 #   Push value of local onto stack
@@ -10,6 +12,8 @@ class LoadLocal extends FirStackInstruction
         @push = 1
         @pop = 0
 
+    toText: -> "LoadLocal #{@local.name}"
+
 # Store <Local>
 #   Pop value from stack and store into local
 exports.StoreLocal =
@@ -18,6 +22,8 @@ class StoreLocal extends FirStackInstruction
         super()
         @push = 0
         @pop = 1
+
+    toText: -> "StoreLocal #{@local.name}"
 
 # LoadField <Field>
 #   Pop argument from stack, and push <Field> onto stack
@@ -77,6 +83,8 @@ class Call extends FirStackInstruction
         @push = @returnCount
         @pop = @argumentCount
 
+    toText: -> "Call #{@function} #{@returnCount} #{@argumentCount}"
+
 # Return <Return Count>
 #   End function, returning <Return Count> return values
 exports.Return =
@@ -100,6 +108,8 @@ class Jump extends FirStackInstruction
         @push = 0
         @pop = 0
 
+    toText: -> "Jump #{@target.name}"
+
 # BranchTrue <Target>
 #   Pop argument from stack and branch to Target if == True
 exports.BranchTrue =
@@ -109,6 +119,8 @@ class BranchTrue extends FirStackInstruction
         @push = 0
         @pop = 1
 
+    toText: -> "BranchTrue #{@target.name}"
+
 # BranchFalse <Target>
 #   Pop argument from stack and branch to Target if == False
 exports.BranchFalse  =
@@ -117,3 +129,5 @@ class BranchFalse extends FirStackInstruction
         super()
         @push = 0
         @pop = 1
+
+    toText: -> "BranchFalse #{@target.name}"

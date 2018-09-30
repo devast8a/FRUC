@@ -2,6 +2,7 @@
 
 class Label
     constructor: (@name)->
+        @target = null
 
 class Local
     constructor: (@type, @name)->
@@ -9,6 +10,7 @@ class Local
 exports.FirStackFunction =
 class FirStackFunction
     constructor: ->
+        @labels = []
         @locals = []
         @instructions = []
 
@@ -18,7 +20,9 @@ class FirStackFunction
         return local
 
     addLabel: (name)->
-        new Label name
+        label = new Label name
+        @labels.push label
+        return label
 
     addInstruction: (source, constructor, args...)->
         # TODO: Ensure that stack is consistent
@@ -36,3 +40,21 @@ class FirStackFunction
         node.defineStackSemantics this, options
 
     mark: (source, label)->
+        if label.target?
+            throw new Error "The label #{label.name} has already been marked"
+
+        label.target = @instructions.length
+
+    toText: ->
+        output = []
+        for instruction, index in @instructions
+            for label in @labels
+                if label.target == index
+                    output.push(label.name)
+                    output.push(": \n")
+
+            output.push("\t")
+            output.push(instruction.toText())
+            output.push("\n")
+
+        return output.join("")
