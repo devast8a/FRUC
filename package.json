@@ -30,6 +30,15 @@
   "scripts": {
     "test": "jest"
   },
+
   "author": "devast8a",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+      "type": "git",
+      "url": "https://github.com/devast8a/FRUC"
+  },
+  "bugs": {
+      "email": "devast8a+frucbugs@whitefirex.com",
+      "url": "https://github.com/devast8a/FRUC/issues"
+  }
 }

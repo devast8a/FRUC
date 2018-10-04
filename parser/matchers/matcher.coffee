@@ -30,7 +30,7 @@ class Matcher
     init: ->
 
     toString: -> "#{@constructor.name}"
-    inspect: -> @toString()
+    # inspect: -> @toString()
 
     getOption: (name)->
         obj = this
@@ -109,19 +109,9 @@ class Matcher
 
 
         # Get line and column information
-        for entry in map
-            if location < entry.end
-                line = entry.line
-                column = location - entry.start
-                break
-
         root.metadata.push {
             definition: this
-            start: {
-                offset: location
-                line: line + 1
-                column: column + 1
-            }
+            start: map.offsetToInfo location
             end: end
             nodes: data
         }

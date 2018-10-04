@@ -1,11 +1,9 @@
 nearley = require 'nearley'
+{displayAst} = require '../analysis/ast_util'
 
 IndentationStream = require './streams/indentation'
 Joiner = require './streams/joiner'
-
-Fmt = require 'fmt'
-fmt = new Fmt
-    filterByKey: Fmt.reject ['metadata', 'map']
+Source = require '../common/source'
 
 class NearleyParser extends nearley.Parser
     feed: (input)->
@@ -28,22 +26,9 @@ class Parser
     constructor: (@grammar)->
 
     parse: (input)->
-        map = []
-        regex = /(?:\r\n|\r|\n)/g
-        line = 0
-
-        prev = 0
-        while match = regex.exec input
-            map.push
-                start: prev
-                end:   prev = regex.lastIndex
-                line:  line++
-                data:  match[0]
-
-            prev += 1
-        map.push {start: prev, end: input.length + 1, line: line++}
-
+        map = Source.fromText input
         parser = new NearleyParser @grammar.ParserRules, @grammar.ParserStart
+
         if @grammar.disable_indent
             stream = parser
         else
@@ -59,7 +44,7 @@ class Parser
 
         if results.length != 1
             for result in results
-                console.log fmt.format result
+                displayAst result
             throw new Error "Expecting 1 parser result, got #{parser.results.length}"
 
         return results[0]
