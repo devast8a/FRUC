@@ -61,6 +61,10 @@ class Rule extends Node
 
         @options = @options.concat @processors
 
+        md = @definition.metadata[@definition.metadata.length - 1]
+        @options.push ['start: ' + JSON.stringify(md.start)]
+        @options.push ['end: ' + JSON.stringify(md.end)]
+
     outputJS: (output)->
         output.push [@name, ".add([", @definition, "]"]
 
@@ -79,7 +83,13 @@ class Rule extends Node
             output.push ['// Linked\n']
 
             for other in @others
-                output.push [other, '.add([', @name, '])\n']
+                md = @definition.metadata[@definition.metadata.length - 1]
+                options = [
+                    'start: ', JSON.stringify(md.start), ","
+                    'end: ', JSON.stringify(md.end)
+                ]
+
+                output.push [other, '.add([', @name, '],{', options, '})\n']
 
             output.dedent()
 

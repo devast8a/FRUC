@@ -1,8 +1,8 @@
-var foo: A
-var bar: B
-
-def fnA(param: A)->
-def fnB(param: B)->
-
-fnA(foo)
-fnB(bar)
+var A: Node;
+var B: Node;
+A = fn();
+if A
+    fn(fn(B));
+else
+    fn(A);
+;

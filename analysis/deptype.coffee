@@ -1,4 +1,4 @@
-{Assign, BranchFalse, BranchTrue, Call, Jump, Mark, Reg} = require '../compiler/instructions'
+{Assign, BranchFalse, BranchTrue, Call, Jump} = require '../compiler/fir/reg/instructions'
 
 duplicateMetadata = (metadata)->
     duplicate = new Map
@@ -33,7 +33,7 @@ isMetadataSame = (x, y)->
     return true
 
 exports.demo = (fn, cfg)->
-    instructionMetadata = new Array fn.low.length
+    instructionMetadata = new Array fn.instructions.length
 
     # Create initial metadata
     md = new Map
@@ -65,7 +65,7 @@ exports.demo = (fn, cfg)->
 
         for instruction in block.instructions
             # Copy previous metadata
-            md = instructionMetadata[instruction.id] = duplicateMetadata md
+            md = instructionMetadata[instruction.offset] = duplicateMetadata md
 
             # Process instructions
             switch instruction.constructor
@@ -76,8 +76,24 @@ exports.demo = (fn, cfg)->
                             throw new Error "Lifetime error, variable is dead"
 
                     # Mutate metadata with our return values
-                    for returnValue in instruction.dst
-                        md.get(returnValue).set('alive', true)
+                    if instruction.dst?
+                        md.get(instruction.dst).set('alive', true)
+
+                when Assign
+                    if !md.get(instruction.src).get('alive')
+                        throw new Error "Lifetime error, variable is dead"
+
+                    md.get(instruction.dst).set('alive', true)
+
+                when BranchTrue, BranchFalse
+                    if !md.get(instruction.value).get('alive')
+                        console.log instructionMetadata
+                        throw new Error "Lifetime error, variable is dead #{instruction.value.name}"
+
+                when Jump
+
+                else
+                    throw new Error "Lifetime error, don't handle instruction #{instruction.constructor.name}"
 
         # Next block to look at
         for child in block.outEdges

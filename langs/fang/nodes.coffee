@@ -54,9 +54,10 @@ class StringSimple extends Node
     init: (regex)->
         @value = regex.data
 
-exports.CallExpression =
-class CallExpression extends Node
-    init: (callable, args)->
+exports.CallNode =
+class CallNode extends Node
+    init: (call)->
+        [callable, args] = call.childNodes
         @callable = callable
         @arguments = args.childNodes
 
@@ -64,8 +65,15 @@ class CallExpression extends Node
         for argument in @arguments
             fn.addNode this, argument, options
 
-        # TODO: Actually calculate number of return values
-        fn.addInstruction this, Call, @callable.value, @arguments.length, 1
+        fn.addInstruction this, Call, @callable.value, @returns, @arguments.length
+
+exports.CallStatement =
+class CallStatement extends CallNode
+    returns: false
+
+exports.CallExpression =
+class CallExpression extends CallNode
+    returns: true
 
 exports.While =
 class While extends Node
@@ -86,6 +94,8 @@ class If extends Node
 
         fn.addNode this, @condition, options
         fn.addInstruction this, BranchFalse, falseBranch
+
+        # True Branch
         for node in @body
             fn.addNode this, node, options
         fn.addInstruction this, Jump, end

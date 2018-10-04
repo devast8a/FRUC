@@ -41,12 +41,13 @@ statement function_definition = 'def' name parameters? returnType? '->' body? ::
 statement assignment = assignable '=' expression :: Assignment
     assignable = expression
 
-statement expression function_call = callable arguments :: CallExpression
+function_call = callable arguments
     callable = identifier
     arguments = '(' argument**',' ')'
     argument = expression
 
-
+statement = function_call :: CallStatement
+expression = function_call :: CallExpression
 
 statement = variable_definition
 variable_definition = 'var' name ':' type :: VariableDefinition

@@ -1,4 +1,4 @@
-{BranchFalse, BranchTrue, Jump, Mark} = require '../../compiler/instructions'
+{BranchFalse, BranchTrue, Jump, Mark} = require '../../compiler/fir/reg/instructions'
 
 jumpInstructions = [
     BranchFalse
@@ -12,8 +12,18 @@ isJumpInstruction = (instruction)->
             return true
     return false
 
+isStartOfBlock = (firFunction, instruction)->
+    # TODO: Binary lookup
+    for label in firFunction.labels
+        if label.target == instruction.offset
+            return true
+    return false
+
 class BasicBlock
     constructor: ->
+        @isExit = false
+        @jumpsToEnd = false
+
         @inEdges = []
         @outEdges = []
         @instructions = []
@@ -22,8 +32,11 @@ class BasicBlock
         @instructions.push instruction
 
     link: (target)->
-        @outEdges.push target
-        target.inEdges.push this
+        if target.isExit
+            @jumpsToEnd = true
+        else
+            @outEdges.push target
+            target.inEdges.push this
 
 exports.firToCfg = (firFunction)->
     blocks = []
@@ -34,15 +47,15 @@ exports.firToCfg = (firFunction)->
     block.id = id++
 
     # Construct basic blocks
-    for [high, instruction] in firFunction.low
+    for instruction in firFunction.instructions
         if isJumpInstruction instruction
             block.pushInstruction instruction
             blocks.push block
             block = new BasicBlock
             block.id = id++
 
-        else if instruction instanceof Mark
-            # If there is a jump/mark or a mark at start of file
+        else if isStartOfBlock firFunction, instruction
+            # If there is a label at start of function
             #   We don't want to create a new block
             if block.instructions.length != 0
                 blocks.push block
@@ -50,11 +63,21 @@ exports.firToCfg = (firFunction)->
                 block.id = id++
                 
             block.pushInstruction instruction
-            targetToBlock.set instruction.label, block
+            
+            # TODO: Be more optimal, come up with a better algo
+            for label in firFunction.labels
+                if label.target == instruction.offset
+                    targetToBlock.set label, block
 
         else
             block.pushInstruction instruction
     blocks.push block
+
+
+    # TODO: Be more optimal, come up with a better algo
+    for label in firFunction.labels
+        if label.target == firFunction.instructions.length
+            targetToBlock.set label, {isExit: true}
 
     # Link basic blocks together
     for block, index in blocks

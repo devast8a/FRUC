@@ -16,7 +16,7 @@ displayAst = (value, indent = "", showName = true)->
         console.log("<" + value.constructor.name + ">")
 
     for key in Object.getOwnPropertyNames(value)
-        continue if key == 'childNodes'
+        #continue if key == 'childNodes'
         continue if key == 'metadata'
         continue if key == 'map'
 
