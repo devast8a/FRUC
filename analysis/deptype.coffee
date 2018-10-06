@@ -1,102 +1,102 @@
 {Assign, BranchFalse, BranchTrue, Call, Jump} = require '../compiler/fir/reg/instructions'
 
 duplicateMetadata = (metadata)->
-    duplicate = new Map
-    metadata.forEach (value, key)->
-        duplicate.set key, new Map value
-    return duplicate
+    metadata.map (localState)->
+        # Assume analysis state isn't an object
+        localState.map (id)->id
 
-isPropertyMapSame = (x, y)->
-    if x == y
-        return true
+mergeMetadata = (target, source, analyses, locals)->
+    for sourceLocal, localIndex in source
+        targetLocal = target[localIndex]
+        local = locals[localIndex]
 
-    if x.size != y.size
-        return false
+        for sourceState, stateIndex in sourceLocal
+            targetState = targetLocal[stateIndex]
+            analysis = analyses[stateIndex]
+            targetLocal[stateIndex] = analysis.merge local, targetState, sourceState
 
-    for [key, value] in Array.from x.entries()
-        if value != y.get(key)
-            return false
+    return target
 
-    return true
+lifetime =
+    ALIVE: false
+    DEAD: true
 
-isMetadataSame = (x, y)->
-    if x == y
-        return true
+    declared: (variable)-> lifetime.DEAD
+    merge: (variable, target, source)-> target or source
+    set: (instruction, variable, state)-> lifetime.ALIVE
+    get: (instruction, variable, state)->
+        if state != lifetime.ALIVE
+            throw new Error "Lifetime error"
 
-    if x.size != y.size
-        return false
+get = (instruction, local, md, analyses)->
+    localmd = md[local.id]
+    for analysis, index in analyses
+        analysis.get instruction, local, localmd[index]
+    return null
 
-    for [key, value] in Array.from x.entries()
-        if not isPropertyMapSame value, y.get(key)
-            return false
-
-    return true
+set = (instruction, local, md, analyses)->
+    localmd = md[local.id]
+    for analysis, index in analyses
+        localmd[index] = analysis.set instruction, local, localmd[index]
+    return null
 
 exports.demo = (fn, cfg)->
-    instructionMetadata = new Array fn.instructions.length
-
-    # Create initial metadata
-    md = new Map
-    for local in fn.locals
-        md.set local, new Map [
-            ['alive', false]
-        ]
-
-    # Open block list that we need to analyze
-    blocks = [
-        [0, cfg[0], md]
+    analyses = [
+        lifetime
     ]
 
-    visitedBlocks = new Array(cfg.length).fill(false)
-    blockInitialMetadata = new Array cfg.length
+    # Create initial metadata
+    md = fn.locals.map (local)->
+        analyses.map (analysis)->
+            analysis.declared local
 
-    while blocks.length > 0
-        [index, block, md] = blocks.pop()
+    # List of basic blocks with no in edges
+    #  There can only be one block with zero in edges, the first block
+    #  As FirReg assumes functions can only have one entrypoint (and it's
+    #  always the first)
+    blocks = [cfg[0]]
 
-        # Don't visit multiple blocks twice, prevents infinite loops
-        if visitedBlocks[index]
-            # Check metadata is consistent with other branches
-            if not isMetadataSame md, blockInitialMetadata[index]
-                throw new Error "DT Error, Merged basic blocks that have differing properties"
-            continue
+    metadata = new Array(cfg.length)
+    metadata[0] = md
 
-        blockInitialMetadata[index] = md
-        visitedBlocks[index] = true
+    inEdges = cfg.map (node)-> new Set node.inEdges
 
-        for instruction in block.instructions
-            # Copy previous metadata
-            md = instructionMetadata[instruction.offset] = duplicateMetadata md
+    while blocks.length > 0 #or graph.length > 0
+        current = blocks.pop()
+        md = metadata[current.id]
 
-            # Process instructions
+        # Perform analysis on current block
+        for instruction in current.instructions
             switch instruction.constructor
-                when Call
-                    # Check all arguments are valid
-                    for argument in instruction.args
-                        if not md.get(argument).get('alive')
-                            throw new Error "Lifetime error, variable is dead"
-
-                    # Mutate metadata with our return values
-                    if instruction.dst?
-                        md.get(instruction.dst).set('alive', true)
-
                 when Assign
-                    if !md.get(instruction.src).get('alive')
-                        throw new Error "Lifetime error, variable is dead"
+                    get instruction, instruction.src, md, analyses
+                    set instruction, instruction.dst, md, analyses
 
-                    md.get(instruction.dst).set('alive', true)
+                when Call
+                    for arg in instruction.args
+                        get instruction, arg, md, analyses
+                    
+                    if instruction.dst?
+                        set instruction, instruction.dst, md, analyses
 
                 when BranchTrue, BranchFalse
-                    if !md.get(instruction.value).get('alive')
-                        console.log instructionMetadata
-                        throw new Error "Lifetime error, variable is dead #{instruction.value.name}"
+                    get instruction, instruction.value, md, analyses
 
+                # Jump does not depend on or modify the state of any locals
                 when Jump
 
                 else
-                    throw new Error "Lifetime error, don't handle instruction #{instruction.constructor.name}"
+                    throw new Error "Doesn't handle #{instruction.constructor.name}"
 
-        # Next block to look at
-        for child in block.outEdges
-            blocks.push [child.id, child, md]
+        for child in current.outEdges
+            # Associate and merge metadata
+            if metadata[child.id]?
+                # Otherwise we want to merge metadata with the previously associated metadata
+                metadata[child.id] = mergeMetadata metadata[child.id], md, analyses, fn.locals
+            else
+                metadata[child.id] = duplicateMetadata md
 
-    console.log instructionMetadata
+            # Remove current from child.inEdges
+            inEdges[child.id].delete current
+            if inEdges[child.id].size <= 0
+                blocks.push child

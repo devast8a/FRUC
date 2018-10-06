@@ -2,7 +2,8 @@ var A: Node;
 var B: Node;
 A = fn();
 if A
-    fn(fn(B));
+    fn(fn(A));
 else
     fn(A);
 ;
+fn(A);
