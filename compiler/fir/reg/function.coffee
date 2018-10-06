@@ -1,12 +1,11 @@
 class Label
-    constructor: (@name)->
+    constructor: (@id, @name)->
         @target = null
 
     toText: -> @name
 
 class Local
-    constructor: (@type, @name)->
-
+    constructor: (@id, @type, @name)->
     toText: -> "Reg(#{@name})"
 
 exports.FirRegFunction =
@@ -34,7 +33,7 @@ class FirRegFunction
         return local
 
     addLabel: (name)->
-        label = new Label name
+        label = new Label @labels.length, name
         @labels.push label
         return label
 
@@ -42,7 +41,7 @@ class FirRegFunction
         if not name?
             name = "$#{@locals.length}"
 
-        local = new Local type, name
+        local = new Local @locals.length, type, name
         @locals.push local
         return local
 
