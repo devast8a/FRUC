@@ -71,6 +71,10 @@ exports.firToCfg = (firFunction)->
 
         else
             block.pushInstruction instruction
+
+    if not isJumpInstruction block.instructions[block.instructions.length - 1]
+        block.jumpsToEnd = true
+
     blocks.push block
 
 
