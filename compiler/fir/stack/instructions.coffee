@@ -1,14 +1,35 @@
 FirReg = require '../reg/instructions'
 
+exports.OpCodes =
+OpCodes = {
+    Unknown:        0
+
+    LoadLocal:      1
+    StoreLocal:     2
+    LoadField:      3
+    StoreField:     4
+    Constant:       5
+
+    Call:           6
+    Return:         7
+
+    Jump:           8
+    BranchTrue:     9
+    BranchFalse:    10
+    
+    # Make sure to keep length up to date
+    length:         11
+}
+
 exports.FirStackInstruction =
 class FirStackInstruction
-    toText: ->
-        "[#{this.constructor.name}]"
+    opcode: OpCodes.Unknown
 
 # Load <Local>
 #   Push value of local onto stack
 exports.LoadLocal =
 class LoadLocal extends FirStackInstruction
+    opcode: OpCodes.LoadLocal
     constructor: (@local)->
         super()
         @push = 1
@@ -24,6 +45,7 @@ class LoadLocal extends FirStackInstruction
 #   Pop value from stack and store into local
 exports.StoreLocal =
 class StoreLocal extends FirStackInstruction
+    opcode: OpCodes.StoreLocal
     constructor: (@local)->
         super()
         @push = 0
@@ -42,6 +64,7 @@ class StoreLocal extends FirStackInstruction
 #   Pop argument from stack, and push <Field> onto stack
 exports.LoadField =
 class LoadField extends FirStackInstruction
+    opcode: OpCodes.LoadField
     constructor: (@field)->
         super()
         @push = 1
@@ -57,6 +80,7 @@ class LoadField extends FirStackInstruction
 #   Pop argument from stack, pop value from stack, set <Field> to value
 exports.StoreField =
 class StoreField extends FirStackInstruction
+    opcode: OpCodes.StoreField
     constructor: (@field)->
         super()
         @push = 0
@@ -76,6 +100,7 @@ class StoreField extends FirStackInstruction
 # TODO: Make sure we keep track of information
 exports.Constant =
 class Constant extends FirStackInstruction
+    opcode: OpCodes.Constant
     constructor: (@type, @value)->
         super()
         @push = 1
@@ -90,6 +115,7 @@ class Constant extends FirStackInstruction
 
 exports.Call =
 class Call extends FirStackInstruction
+    opcode: OpCodes.Call
     constructor: (@function, @returns, @argumentCount)->
         super()
 
@@ -118,6 +144,7 @@ class Call extends FirStackInstruction
 
 exports.Return =
 class Return extends FirStackInstruction
+    opcode: OpCodes.Return
     constructor: (@returns)->
         super()
         if @returnCount < 0
@@ -145,6 +172,7 @@ class Return extends FirStackInstruction
 #   Jump to Target
 exports.Jump =
 class Jump extends FirStackInstruction
+    opcode: OpCodes.Jump
     constructor: (@target)->
         super()
         @push = 0
@@ -161,6 +189,7 @@ class Jump extends FirStackInstruction
 #   Pop argument from stack and branch to Target if == True
 exports.BranchTrue =
 class BranchTrue extends FirStackInstruction
+    opcode: OpCodes.BranchTrue
     constructor: (@target)->
         super()
         @push = 0
@@ -178,6 +207,7 @@ class BranchTrue extends FirStackInstruction
 #   Pop argument from stack and branch to Target if == False
 exports.BranchFalse  =
 class BranchFalse extends FirStackInstruction
+    opcode: OpCodes.BranchFalse
     constructor: (@target)->
         super()
         @push = 0
