@@ -1,4 +1,5 @@
 chalk = require 'chalk'
+fmt = require 'fmt'
 
 rep = (text, length)->
     return "".padEnd(length, text)
@@ -15,17 +16,33 @@ blame = (source, options, fn)->
                 function: this
                 exception: e
 
+exports.handle =
+handle = (fn)->
+    try
+        fn()
+    catch e
+        if not (e instanceof FrucError)
+            throw e
+
+        console.log "%s %s: %s", chalk.black.bgRedBright("  COMPILER ERROR  "), e.constructor.name, e.message
+
+
+        console.log e.source
+
+        console.log ""
+        console.log "=== Stack Trace ==="
+        console.log e.stack
 
 exports.FrucError =
 class FrucError extends Error
-    constructor: (message)->
+    constructor: (@source, message)->
         super message
 
         # Maintains proper stack trace for where our error was thrown (only available on V8)
         if Error.captureStackTrace
-            Error.captureStackTrace this, this.constructor
+            Error.captureStackTrace this, @constructor
 
-        this.name = this.constructor.name
+        @name = @constructor.name
 
     createPointer: (prefix, {start, end})->
         whitespace = rep ' ', prefix + start.column

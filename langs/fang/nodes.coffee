@@ -81,6 +81,18 @@ class While extends Node
         @condition = condition
         @body = elementsFromBlock body
 
+    defineStackSemantics: (fn, options)->
+        condition = fn.addLabel 'condition'
+        body = fn.addLabel 'body'
+
+        fn.addInstruction this, Jump, condition
+        fn.mark this, body
+        for node in @body
+            fn.addNode this, node, options
+        fn.mark this, condition
+        fn.addNode this, @condition, options
+        fn.addInstruction this, BranchTrue, body
+
 exports.If =
 class If extends Node
     init: (condition, body, _, else_)->
