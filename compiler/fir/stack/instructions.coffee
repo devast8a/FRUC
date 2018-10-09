@@ -30,7 +30,7 @@ class FirStackInstruction
 exports.LoadLocal =
 class LoadLocal extends FirStackInstruction
     opcode: OpCodes.LoadLocal
-    constructor: (@local)->
+    constructor: (@metadata, @local)->
         super()
         @push = 1
         @pop = 0
@@ -46,7 +46,7 @@ class LoadLocal extends FirStackInstruction
 exports.StoreLocal =
 class StoreLocal extends FirStackInstruction
     opcode: OpCodes.StoreLocal
-    constructor: (@local)->
+    constructor: (@metadata, @local)->
         super()
         @push = 0
         @pop = 1
@@ -65,7 +65,7 @@ class StoreLocal extends FirStackInstruction
 exports.LoadField =
 class LoadField extends FirStackInstruction
     opcode: OpCodes.LoadField
-    constructor: (@field)->
+    constructor: (@metadata, @field)->
         super()
         @push = 1
         @pop = 1
@@ -81,7 +81,7 @@ class LoadField extends FirStackInstruction
 exports.StoreField =
 class StoreField extends FirStackInstruction
     opcode: OpCodes.StoreField
-    constructor: (@field)->
+    constructor: (@metadata, @field)->
         super()
         @push = 0
         @pop = 2
@@ -101,7 +101,7 @@ class StoreField extends FirStackInstruction
 exports.Constant =
 class Constant extends FirStackInstruction
     opcode: OpCodes.Constant
-    constructor: (@type, @value)->
+    constructor: (@metadata, @type, @value)->
         super()
         @push = 1
         @pop = 0
@@ -116,7 +116,7 @@ class Constant extends FirStackInstruction
 exports.Call =
 class Call extends FirStackInstruction
     opcode: OpCodes.Call
-    constructor: (@function, @returns, @argumentCount)->
+    constructor: (@metadata, @function, @returns, @argumentCount)->
         super()
 
         if @returns
@@ -135,7 +135,7 @@ class Call extends FirStackInstruction
         args = (fn.addStackInstruction i for i in @dependentInstructions)
         
         if @returns
-            ret = fn.addLocal null, null
+            ret = fn.addLocal "int", null
         else
             ret = null
 
@@ -145,7 +145,7 @@ class Call extends FirStackInstruction
 exports.Return =
 class Return extends FirStackInstruction
     opcode: OpCodes.Return
-    constructor: (@returns)->
+    constructor: (@metadata, @returns)->
         super()
         if @returnCount < 0
             throw new Error "Return: returnCount must be zero or greater"
@@ -173,7 +173,7 @@ class Return extends FirStackInstruction
 exports.Jump =
 class Jump extends FirStackInstruction
     opcode: OpCodes.Jump
-    constructor: (@target)->
+    constructor: (@metadata, @target)->
         super()
         @push = 0
         @pop = 0
@@ -190,7 +190,7 @@ class Jump extends FirStackInstruction
 exports.BranchTrue =
 class BranchTrue extends FirStackInstruction
     opcode: OpCodes.BranchTrue
-    constructor: (@target)->
+    constructor: (@metadata, @target)->
         super()
         @push = 0
         @pop = 1
@@ -208,7 +208,7 @@ class BranchTrue extends FirStackInstruction
 exports.BranchFalse  =
 class BranchFalse extends FirStackInstruction
     opcode: OpCodes.BranchFalse
-    constructor: (@target)->
+    constructor: (@metadata, @target)->
         super()
         @push = 0
         @pop = 1

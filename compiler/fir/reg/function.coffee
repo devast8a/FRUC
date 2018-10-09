@@ -46,7 +46,7 @@ class FirRegFunction
         return local
 
     addInstruction: (source, constructor, args...)->
-        instruction = new constructor args...
+        instruction = new constructor source, args...
 
         instruction.offset = @instructions.length
         @instructions.push instruction

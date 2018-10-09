@@ -22,7 +22,7 @@ class FirRegInstruction
 exports.Assign =
 class Assign extends FirRegInstruction
     opcode: OpCodes.Assign
-    constructor: (@dst, @src)-> super()
+    constructor: (@metadata, @dst, @src)-> super()
 
     toText: -> "Assign #{@dst.toText()} #{@src.toText()}"
 
@@ -30,17 +30,18 @@ class Assign extends FirRegInstruction
 exports.Call =
 class Call extends FirRegInstruction
     opcode: OpCodes.Call
-    constructor: (@function, @dst, @args)-> super()
+    constructor: (@metadata, @function, @dst, @args)-> super()
 
     toText: ->
         args = (arg.toText() for arg in @args).join(", ")
         if @dst?
             return "Call #{@function} #{@dst.toText()} [#{args}]"
         return "Call #{@function} null [#{args}]"
+
 exports.Return =
 class Return extends FirRegInstruction
     opcode: OpCodes.Return
-    constructor: (@src)-> super()
+    constructor: (@metadata, @src)-> super()
 
     toText: ->
         if @src?
@@ -52,20 +53,20 @@ class Return extends FirRegInstruction
 exports.Jump =
 class Jump extends FirRegInstruction
     opcode: OpCodes.Jump
-    constructor: (@target)-> super()
+    constructor: (@metadata, @target)-> super()
 
     toText: -> "Jump #{@target.toText()}"
 
 exports.BranchTrue =
 class BranchTrue extends FirRegInstruction
     opcode: OpCodes.BranchTrue
-    constructor: (@target, @value)-> super()
+    constructor: (@metadata, @target, @value)-> super()
 
     toText: -> "BranchTrue #{@target.toText()} #{@value.toText()}"
 
 exports.BranchFalse =
 class BranchFalse extends FirRegInstruction
     opcode: OpCodes.BranchFalse
-    constructor: (@target, @value)-> super()
+    constructor: (@metadata, @target, @value)-> super()
 
     toText: -> "BranchFalse #{@target.toText()} #{@value.toText()}"

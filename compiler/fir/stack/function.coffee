@@ -4,8 +4,8 @@
 chalk = require 'chalk'
 
 class FirStackException extends FrucError
-    constructor: (@source, message, @options)->
-        super message
+    constructor: (source, message, @options)->
+        super source, message
 
     displayAddedInstruction: ->
         console.log ""
@@ -57,7 +57,7 @@ class FirStackFunction
     #   Sets its dependent instructions and ensures the state of the FirStack function is valid
     addInstruction: (source, constructor, args...)->
         # TODO: Keep source around
-        instruction = new constructor args...
+        instruction = new constructor source, args...
 
         ##########################
         if instruction.push != 0 and instruction.push != 1
