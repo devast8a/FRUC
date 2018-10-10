@@ -20,9 +20,13 @@ class Constant extends Matcher
 
     ignoreOutput: true
 
+    dispatch: ->
+
     # Function that handles the processing 
-    preprocess: (data, location, map)->
-        data = data.join ''
+    preprocess: (node, map)->
+        data = node.unprocessed.join ''
+        location = node.location
+
         node = new Value data
         node.metadata.push {
             definition: this

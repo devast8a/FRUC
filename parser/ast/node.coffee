@@ -12,7 +12,7 @@ class Node
         if data?
             @childNodes = []
             for i in [0...nodes.length]
-                if data[i][0].ignoreOutput or data[i][0].parent?.ignoreOutput
+                if data[i].definition.ignoreOutput or data[i].definition.parent?.ignoreOutput
                     continue
                 @childNodes.push nodes[i]
         else

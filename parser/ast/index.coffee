@@ -9,12 +9,12 @@ Node.prototype.__automatic = (definition, data, nodes)->
 
     @childNodes = []
     for i in [0...nodes.length]
-        if data[i][0].ignoreOutput or data[i][0].parent?.ignoreOutput
+        if data[i].definition.ignoreOutput or data[i].definition.parent?.ignoreOutput
             continue
         @childNodes.push nodes[i]
 
     for node, i in nodes
-        if data[i][0].parent.label != '.between'
+        if data[i].definition.parent.label != '.between'
             stripped.push nodes[i]
 
     for name, i in names

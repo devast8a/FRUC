@@ -7,6 +7,12 @@ getEnd = (nodes, location)->
         return md[md.length - 1].end
     return location
 
+class UnprocessedNode
+    constructor: (@definition, @unprocessed, @location)->
+        @dispatched = false
+        @processed = []
+        @parent = []
+
 module.exports =
 class Matcher
     setNameAndId: ->
@@ -79,22 +85,34 @@ class Matcher
 
     # Nearley post processing function, keep a reference to the matcher and the location
     postprocess: (data, location, reject)->
-        [this, data, location]
+        new UnprocessedNode this, data, location
 
-    preprocess: (data, location, map, ignore_process)->
-        nodes = data.map (node)->node[0].preprocess node[1], node[2], map
+    dispatch: (node, stack)->
+        index = node.unprocessed.length
+        while index > 0
+            child = node.unprocessed[--index]
+            child.parent = node.processed
+            stack.push child
+        return
+
+    preprocess: (node, map)->
+        data = node.unprocessed
+        location = node.location
+
+        nodes = node.processed
+        #nodes = node.unprocessed.map (node)->node.definition.preprocess node, map
         end = getEnd nodes, location
 
         # Strip ignored output
         stripped = []
         for i in [0...nodes.length]
-            if data[i][0].ignoreOutput or data[i][0].parent?.ignoreOutput
+            if data[i].definition.ignoreOutput or data[i].definition.parent?.ignoreOutput
                 continue
             stripped.push nodes[i]
 
         if @options.automatic_process and stripped.length == 1
             root = stripped[0]
-        else if @options.process and !ignore_process
+        else if @options.process
             if @options.process.prototype instanceof Node
                 root = new @options.process this, data, nodes
             else

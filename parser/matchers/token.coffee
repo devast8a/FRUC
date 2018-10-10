@@ -18,9 +18,13 @@ class Token extends Matcher
     generate: (tokens)-> tokens.push {name: @token}
     ignoreOutput: true
 
-    preprocess: (data, location, map)->
+    dispatch: ->
+
+    preprocess: (node, map)->
+        data = node.unprocessed[0]
+        location = node.location
+
         # TODO: Provide better mapping
-        data = data[0]
         node = new Value data
         node.metadata.push {
             definition: this

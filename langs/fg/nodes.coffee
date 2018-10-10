@@ -115,7 +115,7 @@ class String extends Node
     init: (@string)->
     outputJS: (output)->
         if @string.data?
-            quote = @metadata[0].nodes[0][1][0][1][0]
+            quote = @metadata[0].nodes[0].unprocessed[0].unprocessed[0]
             output.push [quote, @string, quote]
         else
             output.push ['\'\'']

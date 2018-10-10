@@ -46,8 +46,12 @@ class Charset extends Matcher
 
         tokens.push random @pool
 
-    preprocess: (data, location, map)->
-        data = data[0]
+    dispatch: ->
+
+    preprocess: (node, map)->
+        data = node.unprocessed[0]
+        location = node.location
+
         node = new Value data
         node.metadata.push {
             definition: this

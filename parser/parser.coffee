@@ -38,9 +38,19 @@ class Parser
         stream.end()
         
         results = parser.results.map (ast)->
-            ast = ast[0].preprocess ast[1], ast[2], map
-            ast.map = map
-            return ast
+            stack = [ast]
+
+            while stack.length > 0
+                top = stack[stack.length - 1]
+
+                if top.dispatched
+                    stack.pop()
+                    top.parent.push top.definition.preprocess top, map
+                else
+                    top.definition.dispatch top, stack
+                    top.dispatched = true
+
+            return ast.parent[0]
 
         if results.length != 1
             for result in results
