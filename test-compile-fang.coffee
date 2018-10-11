@@ -18,6 +18,7 @@ fs = require 'fs'
 {Context} = require 'common/context'
 
 
+{Type} = require './compiler/fir/type'
 
 
 
@@ -44,11 +45,11 @@ handle ->
     visit nameResolution, code.ast, metadata: identifierMetadata
 
     ##### AST => FIR STACK
-    fn = new FirStackFunction
-    fn.addNode null, code.ast, metadata: identifierMetadata
+    type = new Type
+    type.addNode null, code.ast, metadata: identifierMetadata
 
     # Add final return
-    fn.addInstruction null, Return
+    #fn.addInstruction null, Return
 
     ##### FIR STACK => FIR REGISTER
     rfn = new FirRegFunction fn

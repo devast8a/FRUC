@@ -1,5 +1,6 @@
 {Constant, LoadLocal, StoreLocal, BranchFalse, BranchTrue, Call, Jump} = require '../../compiler/fir/stack/instructions'
-{Node, Value} = require 'parser/ast'
+{Node, Value} = require '../../parser/ast'
+Type = require '../../compiler/fir/type'
         
 elementsFromBlock = (node)->
     node.childNodes[1]?.childNodes ? []
@@ -10,6 +11,11 @@ class Function extends Node
         @name = name
         @parameters = parameters.childNodes
         @body = elementsFromBlock body
+
+    defineStackSemantics: (type, options)->
+        fn = type.addStackFunction this
+        fn.addNode this, @body, options
+        return
 
 exports.Identifier =
 class Identifier extends Node
