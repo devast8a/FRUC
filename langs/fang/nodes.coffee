@@ -1,4 +1,4 @@
-{LoadLocal, StoreLocal, BranchFalse, BranchTrue, Call, Jump} = require '../../compiler/fir/stack/instructions'
+{Constant, LoadLocal, StoreLocal, BranchFalse, BranchTrue, Call, Jump} = require '../../compiler/fir/stack/instructions'
 {Node, Value} = require 'parser/ast'
         
 elementsFromBlock = (node)->
@@ -49,10 +49,16 @@ class IntegerDecimal extends Node
     init: (regex)->
         @value = regex.data
 
+    defineStackSemantics: (fn, options)->
+        fn.addInstruction this, Constant, "Int", @value
+
 exports.StringSimple =
 class StringSimple extends Node
     init: (regex)->
         @value = regex.data
+
+    defineStackSemantics: (fn, options)->
+        fn.addInstruction this, Constant, "String", @value
 
 exports.CallNode =
 class CallNode extends Node

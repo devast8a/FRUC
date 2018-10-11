@@ -1,19 +1,34 @@
+exports.Kind =
+Kind =
+    UNKNOWN:    0
+    LOCAL:      1
+    CONSTANT:   2
+
+exports.Local =
+class Local
+    kind: Kind.LOCAL
+    constructor: (@id, @type, @name)->
+    toText: -> "Reg(#{@name})"
+
+exports.Constant =
+class Constant
+    kind: Kind.CONSTANT
+    constructor: (@id, @type, @value)->
+    toText: -> "Constant(#{@type}, #{@value})"
+
 class Label
     constructor: (@id, @name)->
         @target = null
 
     toText: -> @name
 
-class Local
-    constructor: (@id, @type, @name)->
-    toText: -> "Reg(#{@name})"
-
 exports.FirRegFunction =
 class FirRegFunction
     constructor: (@function)->
-        @locals = []
-        @labels = []
+        @constants = []
         @instructions = []
+        @labels = []
+        @locals = []
 
         @labelMap = new Map
         @localMap = new Map
@@ -44,6 +59,11 @@ class FirRegFunction
         local = new Local @locals.length, type, name
         @locals.push local
         return local
+
+    addConstant: (source, type, value)->
+        constant = new Constant @constants.length, type, value
+        @constants.push constant
+        return constant
 
     addInstruction: (source, constructor, args...)->
         instruction = new constructor source, args...

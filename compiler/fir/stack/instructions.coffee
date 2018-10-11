@@ -109,7 +109,7 @@ class Constant extends FirStackInstruction
     toText: -> "Constant #{@type} #{@value}"
 
     defineRegSemantics: (fn)->
-        return new FirReg.Constant @type, @value, this
+        return fn.addConstant this, @type, @value
 
 ################################################################################
 

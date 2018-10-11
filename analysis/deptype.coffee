@@ -1,4 +1,5 @@
 {Return, Assign, BranchFalse, BranchTrue, Call, Jump} = require '../compiler/fir/reg/instructions'
+{Constant, Local} = require '../compiler/fir/reg/function'
 
 duplicateMetadata = (metadata)->
     metadata.map (localState)->
@@ -18,10 +19,12 @@ mergeMetadata = (context, target, source, analyses, locals)->
     return target
 
 get = (context, instruction, local, md, analyses)->
-    localmd = md[local.id]
-    for analysis, index in analyses
-        localmd[index] = analysis.get context, instruction, local, localmd[index]
-    return null
+    switch local.kind
+        when Local::kind
+            localmd = md[local.id]
+            for analysis, index in analyses
+                localmd[index] = analysis.get context, instruction, local, localmd[index]
+    return
 
 set = (context, instruction, local, md, analyses)->
     localmd = md[local.id]

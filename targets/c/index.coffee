@@ -1,6 +1,7 @@
 # Take FirRegFunction and convert to C
 
 FirReg = require '../../compiler/fir/reg/instructions'
+{Kind} = require '../../compiler/fir/reg/function'
 
 converters = new Array FirReg.OpCodes.length
 
@@ -8,24 +9,36 @@ mangleName = (name)->
     name = name.replace '$', '_DOLLAR_'
     return name
 
+handleValue = (value)->
+    switch value.kind
+        when Kind.LOCAL
+            return mangleName value.name
+
+        when Kind.CONSTANT
+            # TODO: Double check constants are supported correctly
+            return JSON.stringify value.value
+
+        else
+            throw new Error "Unknown kind #{value.kind}"
+
 converters[FirReg.Call::opcode] = (instruction, content)->
     content.push "    "
     if instruction.dst?
-        content.push mangleName instruction.dst.name
+        content.push handleValue instruction.dst
         content.push " = "
     else
         content.push "(void) "
 
     content.push mangleName instruction.function
     content.push "("
-    content.push instruction.args.map((local)-> mangleName(local.name)).join(", ")
+    content.push instruction.args.map(handleValue).join(", ")
     content.push ");\n"
 
 converters[FirReg.Assign::opcode] = (instruction, content)->
     content.push "    "
-    content.push mangleName instruction.dst.name
+    content.push handleValue instruction.dst
     content.push " = "
-    content.push mangleName instruction.src.name
+    content.push handleValue instruction.src
     content.push ";\n"
 
 converters[FirReg.Jump::opcode] = (instruction, content)->
@@ -35,14 +48,14 @@ converters[FirReg.Jump::opcode] = (instruction, content)->
 
 converters[FirReg.BranchTrue::opcode] = (instruction, content)->
     content.push "    if("
-    content.push mangleName instruction.value.name
+    content.push handleValue instruction.value
     content.push "){ goto "
     content.push instruction.target.name
     content.push "; }\n"
 
 converters[FirReg.BranchFalse::opcode] = (instruction, content)->
     content.push "    if(!("
-    content.push mangleName instruction.value.name
+    content.push handleValue instruction.value
     content.push ")){ goto "
     content.push instruction.target.name
     content.push "; }\n"
@@ -51,7 +64,7 @@ converters[FirReg.Return::opcode] = (instruction, content)->
     content.push "    return"
     if instruction.src?
         content.push " "
-        content.push mangleName instruction.src.name
+        content.push handleValue instruction.src
     content.push ";\n"
 
 exports.output =
