@@ -1,4 +1,4 @@
-nodes = require 'langs/fang/nodes'
+nodes = require '../langs/fang/nodes'
 
 module.exports = staticTypeAnalysis = new Map
 

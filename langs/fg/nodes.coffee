@@ -1,4 +1,4 @@
-{Node, Value} = require 'parser/ast'
+{Node, Value} = require '../../parser/ast'
 
 Node::getByType = (type)->
     output = []
@@ -197,8 +197,6 @@ Repeat = (name)->
 exports.Opt = Repeat 'Opt'
 exports.Rep = Repeat 'Rep'
 exports.OptRep = Repeat 'OptRep'
-
-{displayAstNodes} = require 'analysis/ast_util'
 
 exports.Document =
 class Document extends Node

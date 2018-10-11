@@ -1,8 +1,8 @@
 {expect} = require 'chai'
 
-Grammar = require 'parser/grammar'
-Matcher = require 'parser/matchers/matcher'
-Definition = require 'parser/matchers/definition'
+Grammar = require '../../../parser/grammar'
+Matcher = require '../../../parser/matchers/matcher'
+Definition = require '../../../parser/matchers/definition'
 {Optional} = Definition
 
 grammar = parent = opt = req = null

@@ -1,22 +1,21 @@
 chalk = require 'chalk'
 nameResolution = require './analysis/fang_name_resolution'
 staticTypeAnalysis = require './analysis/fang_static_type'
-{compile} = require 'compiler'
+{compile} = require './compiler'
 {visit, displayAst} = require './analysis/ast_util'
 
-{FirStackFunction} = require 'compiler/fir/stack/function'
-{Return} = require 'compiler/fir/stack/instructions'
-{FirRegFunction} = require 'compiler/fir/reg/function'
+{FirStackFunction} = require './compiler/fir/stack/function'
+{Return} = require './compiler/fir/stack/instructions'
+{FirRegFunction} = require './compiler/fir/reg/function'
 
-{handle, FrucError} = require 'common/errors'
-Source = require 'common/source'
+{handle, FrucError} = require './common/errors'
+Source = require './common/source'
 
-C = require 'targets/c'
+C = require './targets/c'
 
 fs = require 'fs'
 
-{Context} = require 'common/context'
-
+{Context} = require './common/context'
 
 {Type} = require './compiler/fir/type'
 
@@ -26,8 +25,6 @@ fs = require 'fs'
 #   AstNameResolution
 #   FirStack
 #   FirReg
-
-
 
 
 handle ->
@@ -62,21 +59,21 @@ handle ->
         if label.target == fn.instructions.length
             rfn.mark null, rfn.lookupLabel label
 
-    console.log rfn.toText()
+    # console.log rfn.toText()
 
     ##### STATIC ANALYSIS
 
     {firToCfg} = require './analysis/cfg/fir_to_cfg'
     cfg = firToCfg rfn
 
-    console.log "#####################"
-    for block in cfg
-        console.log "Block: #{block.id}"
-        for instruction in block.instructions
-            console.log instruction.toText()
-        for edges in block.outEdges
-            console.log " => #{edges.id}"
-        console.log ""
+    #console.log "#####################"
+    #for block in cfg
+    #    console.log "Block: #{block.id}"
+    #    for instruction in block.instructions
+    #        console.log instruction.toText()
+    #    for edges in block.outEdges
+    #        console.log " => #{edges.id}"
+    #    console.log ""
 
     # Dependent Types Demo
     {demo} = require './analysis/deptype'
@@ -99,4 +96,4 @@ handle ->
     code = C.output rfn
     console.log code
 
-    fs.writeFileSync 'test.c', code
+    #fs.writeFileSync 'test.c', code

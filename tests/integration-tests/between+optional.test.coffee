@@ -1,8 +1,8 @@
 {expect} = require 'chai'
 
-Grammar = require 'parser/grammar'
-Parser = require 'parser'
-{Opt, Rep, OptRep} = require 'parser/grammar/helpers'
+Grammar = require '../../parser/grammar'
+Parser = require '../../parser'
+{Opt, Rep, OptRep} = require '../../parser/grammar/helpers'
 
 class Tester
     constructor: (rule)->

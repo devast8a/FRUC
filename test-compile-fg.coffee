@@ -1,4 +1,4 @@
-compiler = require 'compiler'
+compiler = require './compiler'
 
 fg1 = compiler.compile
     with: 'fg'

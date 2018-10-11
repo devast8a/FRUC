@@ -1,4 +1,4 @@
-nodes = require 'langs/fang/nodes'
+nodes = require '../langs/fang/nodes'
 
 module.exports = nameResolution = new Map
 

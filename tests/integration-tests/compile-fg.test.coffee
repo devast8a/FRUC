@@ -1,5 +1,5 @@
 {expect} = require 'chai'
-compiler = require 'compiler'
+compiler = require '../../compiler'
 
 test 'fg can be compiled', ->
     compiler.compile with: 'fg', inputPath: 'langs/fg/fg.fg'

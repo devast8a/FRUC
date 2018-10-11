@@ -47,7 +47,7 @@ exports.compile = (options)->
         fs.writeFileSync options.outputPath, code
 
     # Automatically run it
-    req = (p)-> require options.directory + p
+    req = (p)-> require '../' + options.directory + p
     mdl = {
         exports: {}
         input: options.input
