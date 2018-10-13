@@ -2,3 +2,5 @@ node_modules/
 output/
 langs/fang/index.js
 experiments/
+
+/langs/fg/fg.fg.js
