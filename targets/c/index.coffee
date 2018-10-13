@@ -68,39 +68,43 @@ converters[FirReg.Return::opcode] = (instruction, content)->
     content.push ";\n"
 
 exports.output =
-output = (fn)->
+output = (type)->
     content = []
 
     content.push '#include "fruclib.h"\n'
-    content.push 'int main() {\n'
 
-    # Define locals
-    for local in fn.locals
-        content.push "    "
-        content.push local.type
-        content.push " "
-        content.push mangleName local.name
-        content.push ";\n"
+    for fn in type.registerFunctions
+        content.push 'int '
+        content.push mangleName fn.name
+        content.push '() {\n'
 
-    instructionToLabels = new Array fn.instructions.length + 1
-    for label in fn.labels
-        (instructionToLabels[label.target] ?= []).push label
+        # Define locals
+        for local in fn.locals
+            content.push "    "
+            content.push local.type
+            content.push " "
+            content.push mangleName local.name
+            content.push ";\n"
 
-    # Convert instructions
-    for instruction in fn.instructions
-        handler = converters[instruction.opcode]
+        instructionToLabels = new Array fn.instructions.length + 1
+        for label in fn.labels
+            (instructionToLabels[label.target] ?= []).push label
 
-        if (labels = instructionToLabels[instruction.offset])?
-            for label in labels
-                content.push label.name
-                content.push ": "
-            content.push "\n"
+        # Convert instructions
+        for instruction in fn.instructions
+            handler = converters[instruction.opcode]
 
-        if handler?
-            handler instruction, content
-        else
-            throw new Error "#{instruction.constructor.name} does not have a handler"
+            if (labels = instructionToLabels[instruction.offset])?
+                for label in labels
+                    content.push label.name
+                    content.push ": "
+                content.push "\n"
 
-    content.push '}'
+            if handler?
+                handler instruction, content
+            else
+                throw new Error "#{instruction.constructor.name} does not have a handler"
+
+        content.push '}\n'
 
     return content.join ""

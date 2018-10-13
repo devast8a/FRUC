@@ -9,6 +9,7 @@ class FirException extends FrucError
 exports.Type =
 class Type
     constructor: (@name)->
+        @stackFunctions = []
 
     addNode: (source, node, options)->
         if not node.defineStackSemantics?
@@ -17,5 +18,10 @@ class Type
         blame node, {function: this}, =>
             node.defineStackSemantics this, options
 
-    addStackFunction: (source)->
-        new FirStackFunction
+    addStackFunction: (source, name)->
+        if not name?
+            name = "$fn#{@stackFunctions.length}"
+
+        fn = new FirStackFunction name
+        @stackFunctions.push fn
+        return fn

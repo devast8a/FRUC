@@ -16,8 +16,9 @@ C = require './targets/c'
 fs = require 'fs'
 
 {Context} = require './common/context'
-
 {Type} = require './compiler/fir/type'
+{firToCfg} = require './analysis/cfg/fir_to_cfg'
+{demo} = require './analysis/deptype'
 
 
 
@@ -33,67 +34,64 @@ handle ->
 
     # Compile fang grammar, then compile our code
     fang = compile with: 'fg', inputPath: 'langs/fang/fang.fg', outputPath: 'langs/fang/index.js'
+
+    # Read File / Parsing / Parse Tree Annotation
     code = compile with: fang.exports, inputPath: 'langs/fang/example.fang'
 
     ################################################################################
     identifierMetadata = new Map
 
-    ##### NAME RESOLUTION
+    ########## NAME RESOLUTION
     visit nameResolution, code.ast, metadata: identifierMetadata
 
-    ##### AST => FIR STACK
+    ########## Intermediate Representation Generation
     type = new Type
     type.addNode null, code.ast, metadata: identifierMetadata
 
     # Add final return
-    #fn.addInstruction null, Return
+    # fn.addInstruction null, Return
 
-    ##### FIR STACK => FIR REGISTER
-    rfn = new FirRegFunction fn
+    ########## Stack to Register Conversion
+    type.registerFunctions = []
+    for fn in type.stackFunctions
+        rfn = new FirRegFunction fn
+        type.registerFunctions.push rfn
 
-    for instruction in fn.terminalInstructions
-        rfn.addStackInstruction instruction
+        for instruction in fn.terminalInstructions
+            rfn.addStackInstruction instruction
 
-    # Check for labels at end of function and mark them correctly
-    for label in fn.labels
-        if label.target == fn.instructions.length
-            rfn.mark null, rfn.lookupLabel label
-
-    # console.log rfn.toText()
-
-    ##### STATIC ANALYSIS
-
-    {firToCfg} = require './analysis/cfg/fir_to_cfg'
-    cfg = firToCfg rfn
-
-    #console.log "#####################"
-    #for block in cfg
-    #    console.log "Block: #{block.id}"
-    #    for instruction in block.instructions
-    #        console.log instruction.toText()
-    #    for edges in block.outEdges
-    #        console.log " => #{edges.id}"
-    #    console.log ""
-
-    # Dependent Types Demo
-    {demo} = require './analysis/deptype'
+        # Check for labels at end of function and mark them correctly
+        for label in fn.labels
+            if label.target == fn.instructions.length
+                rfn.mark null, rfn.lookupLabel label
 
     context = new Context
 
-    demo context, rfn, cfg
+    ########## Symbol Resolution [R]
+    ########## Resolved Symbol Code Rewrite
 
-    if context.errors.length > 0
-        for e in context.errors
-            console.log "%s %s: %s", chalk.black.bgRedBright("  COMPILER ERROR  "), e.constructor.name, e.message
+    ########## Intra-unit Pluggable Static Analysis
+    for fn in type.registerFunctions
+        cfg = firToCfg fn
 
-            console.log e.source
+        # Dependent Types Demo
+        demo context, fn, cfg
 
-            console.log ""
-            console.log "=== Stack Trace ==="
-            console.log e.stack
-        return
+        if context.errors.length > 0
+            for e in context.errors
+                console.log "%s %s: %s", chalk.black.bgRedBright("  COMPILER ERROR  "), e.constructor.name, e.message
 
-    code = C.output rfn
+                console.log e.source
+
+                console.log ""
+                console.log "=== Stack Trace ==="
+                console.log e.stack
+            return
+
+    ########## Inter-unit Pluggable Static Analysis
+
+    ########## Target Generation
+    code = C.output type
     console.log code
 
     #fs.writeFileSync 'test.c', code

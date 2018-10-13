@@ -7,14 +7,16 @@ elementsFromBlock = (node)->
 
 exports.Function =
 class Function extends Node
-    init: (name, parameters, body)->
+    init: (name, parameters, _, body)->
         @name = name
         @parameters = parameters.childNodes
         @body = elementsFromBlock body
 
     defineStackSemantics: (type, options)->
-        fn = type.addStackFunction this
-        fn.addNode this, @body, options
+        fn = type.addStackFunction this, @name.value
+
+        for node in @body
+            fn.addNode this, node, options
         return
 
 exports.Identifier =

@@ -25,6 +25,7 @@ class Label
 exports.FirRegFunction =
 class FirRegFunction
     constructor: (@function)->
+        @name = @function.name
         @constants = []
         @instructions = []
         @labels = []

@@ -32,7 +32,7 @@ class Local
 
 exports.FirStackFunction =
 class FirStackFunction
-    constructor: ->
+    constructor: (@name)->
         @labels = []
         @locals = []
         @instructions = []
