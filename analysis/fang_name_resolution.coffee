@@ -19,6 +19,13 @@ nameResolution.set nodes.Function, (node, options)->
         parameters: node.parameters
     }
 
+    for parameter in node.parameters
+        options.metadata.set parameter.name.value, {
+            kind: Kind.VARIABLE
+            type: "xyz"
+        }
+    return
+
 nameResolution.set nodes.ClassDefinition, (node, options)->
     options.metadata.set node.name.value, {
         kind: Kind.CLASS

@@ -8,6 +8,7 @@ exports.Local =
 class Local
     kind: Kind.LOCAL
     constructor: (@id, @type, @name)->
+        @isParameter = false
     toText: -> "Reg(#{@name})"
 
 exports.Constant =
@@ -45,6 +46,7 @@ class FirRegFunction
         local = @localMap.get key
         if not local?
             local = @addLocal key.type, key.name
+            local.isParameter = key.isParameter
             @localMap.set key, local
         return local
 

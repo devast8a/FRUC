@@ -29,6 +29,7 @@ class Label
 
 class Local
     constructor: (@type, @name)->
+        @isParameter = false
 
 exports.FirStackFunction =
 class FirStackFunction
@@ -41,6 +42,11 @@ class FirStackFunction
         @terminalInstructions = []
         @currentDepth = 0
         @maxDepth = 0
+
+    addParameter: (type, name)->
+        local = @addLocal type, name
+        local.isParameter = true
+        return local
 
     addLocal: (type, name)->
         local = new Local type, name

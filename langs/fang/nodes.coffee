@@ -15,6 +15,10 @@ class Function extends Node
     defineStackSemantics: (type, options)->
         fn = type.addStackFunction this, @name.value
 
+        for parameter in @parameters
+            md = options.metadata.get parameter.name.value
+            md.local = fn.addParameter "xyz", parameter.name.value
+
         for node in @body
             fn.addNode this, node, options
         return

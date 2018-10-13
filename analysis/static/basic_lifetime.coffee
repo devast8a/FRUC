@@ -37,6 +37,8 @@ NOT_SET = true
 # For each declared variable, its static-metadata for this analysis plugin
 # is set to the return value of this function. ie. It's set to NOT_SET
 exports.declare = (context, variable)->
+    if variable.isParameter
+        return SET
     return NOT_SET
 
 # When the control flow merges, call the following function to figure out
