@@ -1,5 +1,4 @@
 chalk = require 'chalk'
-fmt = require 'fmt'
 
 rep = (text, length)->
     return "".padEnd(length, text)
