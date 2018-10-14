@@ -1,6 +1,4 @@
 chalk = require 'chalk'
-nameResolution = require './analysis/fang_name_resolution'
-staticTypeAnalysis = require './analysis/fang_static_type'
 {compile} = require './compiler'
 {visit, displayAst} = require './analysis/ast_util'
 
