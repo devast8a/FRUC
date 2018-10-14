@@ -35,7 +35,7 @@ class LoadLocal extends FirStackInstruction
         @push = 1
         @pop = 0
 
-    toText: -> "LoadLocal #{@local.name}"
+    toText: -> "LoadLocal #{@local}"
 
     defineRegSemantics: (fn)->
         # TODO: Perform name resolution on register
@@ -51,7 +51,7 @@ class StoreLocal extends FirStackInstruction
         @push = 0
         @pop = 1
 
-    toText: -> "StoreLocal #{@local.name}"
+    toText: -> "StoreLocal #{@local}"
 
     defineRegSemantics: (fn)->
         # TODO: Perform name resolution on register
@@ -135,7 +135,7 @@ class Call extends FirStackInstruction
         args = (fn.addStackInstruction i for i in @dependentInstructions)
         
         if @returns
-            ret = fn.addLocal "int", null
+            ret = fn.addTemporary()
         else
             ret = null
 

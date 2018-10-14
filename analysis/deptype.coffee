@@ -1,5 +1,5 @@
-{Return, Assign, BranchFalse, BranchTrue, Call, Jump} = require '../compiler/fir/reg/instructions'
-{Constant, Local} = require '../compiler/fir/reg/function'
+{Return, Assign, BranchFalse, BranchTrue, Call, Jump} = require '../compiler/fir/reg-r/instructions'
+{Constant, Local} = require '../compiler/fir/reg-r/function'
 
 duplicateMetadata = (metadata)->
     metadata.map (localState)->

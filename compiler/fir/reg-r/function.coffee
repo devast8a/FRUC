@@ -1,21 +1,15 @@
 exports.Kind =
 Kind =
     UNKNOWN:    0
-    IDENTIFIER: 1
-    TEMPORARY:  2
-    CONSTANT:   3
+    LOCAL:      1
+    CONSTANT:   2
 
-exports.Identifier =
-class Identifier
-    kind: Kind.IDENTIFIER
-    constructor: (@name)->
-    toText: -> "Id(#{@name})"
-
-exports.Temporary =
-class Temporary
-    kind: Kind.TEMPORARY
-    constructor: (@id, @type)->
-    toText: -> "Temp(#{@id})"
+exports.Local =
+class Local
+    kind: Kind.LOCAL
+    constructor: (@id, @type, @name)->
+        @isParameter = false
+    toText: -> "Reg(#{@name})"
 
 exports.Constant =
 class Constant
@@ -29,16 +23,14 @@ class Label
 
     toText: -> @name
 
-exports.FirRegFunction =
-class FirRegFunction
+exports.FirRegResolvedFunction =
+class FirRegResolvedFunction
     constructor: (@function)->
         @name = @function.name
         @constants = []
         @instructions = []
         @labels = []
-
-        @locals = @function.locals
-        @temporaries = []
+        @locals = []
 
         @labelMap = new Map
         @localMap = new Map
@@ -51,17 +43,25 @@ class FirRegFunction
         return label
 
     lookupLocal: (key)->
-        return new Identifier key
+        local = @localMap.get key
+        if not local?
+            local = @addLocal key.type, key.name
+            local.isParameter = key.isParameter
+            @localMap.set key, local
+        return local
 
     addLabel: (name)->
         label = new Label @labels.length, name
         @labels.push label
         return label
 
-    addTemporary: (type)->
-        temporary = new Temporary @temporaries.length, type
-        @temporaries.push temporary
-        return temporary
+    addLocal: (type, name)->
+        if not name?
+            name = "$#{@locals.length}"
+
+        local = new Local @locals.length, type, name
+        @locals.push local
+        return local
 
     addConstant: (source, type, value)->
         constant = new Constant @constants.length, type, value

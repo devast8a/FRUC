@@ -10,6 +10,9 @@ exports.Type =
 class Type
     constructor: (@name)->
         @stackFunctions = []
+        @registerFunctions = []
+        @stackResolvedFunctions = []
+        @registerResolvedFunctions = []
 
     addNode: (source, node, options)->
         if not node.defineStackSemantics?

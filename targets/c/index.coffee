@@ -1,7 +1,8 @@
 # Take FirRegFunction and convert to C
 
-FirReg = require '../../compiler/fir/reg/instructions'
-{Kind} = require '../../compiler/fir/reg/function'
+FirReg = require '../../compiler/fir/reg-r/instructions'
+{Kind} = require '../../compiler/fir/reg-r/function'
+{Text} = require '../text'
 
 converters = new Array FirReg.OpCodes.length
 
@@ -73,10 +74,18 @@ output = (type)->
 
     content.push '#include "fruclib.h"\n'
 
-    for fn in type.registerFunctions
+    for fn in type.registerResolvedFunctions
         content.push 'int '
         content.push mangleName fn.name
-        content.push '() {\n'
+        content.push '('
+
+        for parameter in fn.locals
+            if parameter.isParameter
+                content.push parameter.type
+                content.push " "
+                content.push mangleName parameter.name
+
+        content.push ') {\n'
 
         # Define locals
         for local in fn.locals

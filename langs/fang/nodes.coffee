@@ -15,9 +15,9 @@ class Function extends Node
     defineStackSemantics: (type, options)->
         fn = type.addStackFunction this, @name.value
 
-        for parameter in @parameters
-            md = options.metadata.get parameter.name.value
-            md.local = fn.addParameter "xyz", parameter.name.value
+        #for parameter in @parameters
+        #md = options.metadata.get parameter.name.value
+        #md.local = fn.addParameter "xyz", parameter.name.value
 
         for node in @body
             fn.addNode this, node, options
@@ -32,8 +32,8 @@ class Identifier extends Node
     defineStackSemantics: (fn, options)->
         # We are assuming execution as an expression
         # ie. We push the value of local onto stack
-        md = options.metadata.get @value
-        fn.addInstruction this, LoadLocal, md.local
+        #md = options.metadata.get @value
+        fn.addInstruction this, LoadLocal, @value
 
 exports.Document =
 class Document extends Node
@@ -50,11 +50,11 @@ class Assignment extends Node
 
     defineStackSemantics: (fn, options)->
         # TODO: Setup defineStackSemantics to signal to other nodes that we want to store a value.
-        md = options.metadata.get @destination.value
+        #md = options.metadata.get @destination.value
 
         fn.addNode this, @source, options
 
-        fn.addInstruction this, StoreLocal, md.local
+        fn.addInstruction this, StoreLocal, @destination.value
 
 exports.IntegerDecimal =
 class IntegerDecimal extends Node
@@ -147,8 +147,9 @@ class VariableDefinition extends Node
     init: (@name, @type)->
 
     defineStackSemantics: (fn, options)->
-        md = options.metadata.get @name.value
-        md.local = fn.addLocal @type.name.value, @name.value
+        #md = options.metadata.get @name.value
+        #md.local = fn.addLocal @type.name.value, @name.value
+        fn.addLocal @type.name.value, @name.value
 
 exports.FunctionParameter =
 class FunctionParameter extends Node

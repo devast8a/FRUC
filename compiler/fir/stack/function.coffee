@@ -31,6 +31,8 @@ class Local
     constructor: (@type, @name)->
         @isParameter = false
 
+    toText: -> "Local(#{@name})"
+
 exports.FirStackFunction =
 class FirStackFunction
     constructor: (@name)->
